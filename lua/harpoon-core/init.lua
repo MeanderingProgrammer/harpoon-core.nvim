@@ -1,5 +1,8 @@
+local path = require('plenary.path')
+
 -- Typically resolves to ~/.local/share/nvim
-local user_marks = vim.fn.stdpath('data') .. '/harpoon-core.json'
+local user_marks_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
+local context = {}
 
 local M = {}
 
@@ -30,8 +33,19 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
+local function read(file)
+    vim.json.decode(path:new(file):read())
+end
+
 M.setup = function(opts)
-    -- TODO
+    opts = opts or {}
+    context.opts = opts
+
+    local ok, user_marks = pcall(read, user_marks_file)
+    if not ok then
+        user_marks = {}
+    end
+    context.user_marks = user_marks
 end
 
 return M
