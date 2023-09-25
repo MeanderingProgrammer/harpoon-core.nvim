@@ -7,7 +7,7 @@ local M = {}
 local context = {}
 
 local function read(file)
-    vim.json.decode(path:new(file):read())
+    return vim.json.decode(path:new(file):read())
 end
 
 M.setup = function()
@@ -49,6 +49,18 @@ M.add_file = function()
     if not contains(marks, file_name) then
         table.insert(marks, { file_name = file_name })
         save()
+    end
+end
+
+M.get_file_name = function(index)
+    if context.projects[project_key()] == nil then
+        return nil
+    end
+    local marks = context.projects[project_key()].marks
+    if #marks > 0 and index <= #marks then
+        return project_key() .. '/' .. marks[index].file_name
+    else
+        return nil
     end
 end
 
