@@ -1,7 +1,7 @@
 local path = require('plenary.path')
 
 -- Typically resolves to ~/.local/share/nvim
-local user_marks_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
+local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
 
 local M = {}
 local context = {}
@@ -11,7 +11,7 @@ local function read(file)
 end
 
 M.setup = function()
-    local ok, projects = pcall(read, user_marks_file)
+    local ok, projects = pcall(read, user_projects_file)
     if not ok then
         projects = {}
     end
@@ -37,7 +37,7 @@ end
 
 local function save()
     local projects = vim.fn.json_encode(context.projects)
-    path:new(user_marks_file):write(projects, 'w')
+    path:new(user_projects_file):write(projects, 'w')
 end
 
 M.add_file = function()
