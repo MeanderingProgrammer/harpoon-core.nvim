@@ -7,3 +7,6 @@ I like all the file marking and switch logic that's part of
 interested in all of the TMUX / terminal stuff.
 
 Creating a sort of fork with some heavy modifications to get this done.
+
+Looks like ThePrimeagen expresses some similar thoughts based on:
+[issue-255](https://github.com/ThePrimeagen/harpoon/issues/255).
