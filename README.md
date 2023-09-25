@@ -10,3 +10,9 @@ Creating a sort of fork with some heavy modifications to get this done.
 
 Looks like ThePrimeagen expresses some similar thoughts based on:
 [issue-255](https://github.com/ThePrimeagen/harpoon/issues/255).
+
+# TODO
+
+* Based on how we handle deleting and moving files `add_file` method may
+  need to have first available index logic, as opposed to always appending
+  to the end of the table.
