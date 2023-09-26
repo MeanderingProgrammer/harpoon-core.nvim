@@ -52,6 +52,10 @@ M.add_file = function()
     end
 end
 
+M.rm_file = function()
+    -- TODO
+end
+
 M.get_file_name = function(index)
     if context.projects[project_key()] == nil then
         return nil

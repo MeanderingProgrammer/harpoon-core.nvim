@@ -19,4 +19,8 @@ M.nav_file = function(index)
     vim.api.nvim_set_current_buf(bufnr)
 end
 
+M.toggle_quick_menu = function()
+    -- TODO
+end
+
 return M
