@@ -18,12 +18,33 @@ M.setup = function()
     context.projects = projects
 end
 
-local function project_key()
+M.project = function()
     return vim.loop.cwd()
 end
 
-local function relative(buf_name)
-    return path:new(buf_name):make_relative(project_key())
+local function get_or_set_marks()
+    if context.projects[M.project()] == nil then
+        context.projects[M.project()] = { marks = {} }
+    end
+    return context.projects[M.project()].marks
+end
+
+M.get_files = function()
+    local marks = get_or_set_marks()
+    local files = {}
+    for i = 1, #marks do
+        table.insert(files, marks[i].file_name)
+    end
+    return files
+end
+
+local function get_current_file()
+    local file_name = vim.api.nvim_buf_get_name(0)
+    if vim.fn.filereadable(file_name) == 1 then
+        return path:new(file_name):make_relative(M.project())
+    else
+        return nil
+    end
 end
 
 local function contains(marks, file_name)
@@ -41,12 +62,9 @@ local function save()
 end
 
 M.add_file = function()
-    if context.projects[project_key()] == nil then
-        context.projects[project_key()] = { marks = {} }
-    end
-    local marks = context.projects[project_key()].marks
-    local file_name = relative(vim.api.nvim_buf_get_name(0))
-    if not contains(marks, file_name) then
+    local marks = get_or_set_marks()
+    local file_name = get_current_file()
+    if file_name ~= nil and not contains(marks, file_name) then
         table.insert(marks, { file_name = file_name })
         save()
     end
@@ -57,12 +75,9 @@ M.rm_file = function()
 end
 
 M.get_file_name = function(index)
-    if context.projects[project_key()] == nil then
-        return nil
-    end
-    local marks = context.projects[project_key()].marks
+    local marks = get_or_set_marks()
     if #marks > 0 and index <= #marks then
-        return project_key() .. '/' .. marks[index].file_name
+        return M.project() .. '/' .. marks[index].file_name
     else
         return nil
     end
