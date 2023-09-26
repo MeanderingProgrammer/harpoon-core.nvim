@@ -47,13 +47,13 @@ local function get_current_file()
     end
 end
 
-local function contains(marks, file_name)
+local function file_index(marks, file_name)
     for i = 1, #marks do
         if marks[i].file_name == file_name then
-            return true
+            return i
         end
     end
-    return false
+    return nil
 end
 
 local function save()
@@ -64,14 +64,21 @@ end
 M.add_file = function()
     local marks = get_or_set_marks()
     local file_name = get_current_file()
-    if file_name ~= nil and not contains(marks, file_name) then
+    local index = file_index(marks, file_name)
+    if file_name ~= nil and index == nil then
         table.insert(marks, { file_name = file_name })
         save()
     end
 end
 
 M.rm_file = function()
-    -- TODO
+    local marks = get_or_set_marks()
+    local file_name = get_current_file()
+    local index = file_index(marks, file_name)
+    if file_name ~= nil and index ~= nil then
+        table.remove(marks, index)
+        save()
+    end
 end
 
 M.get_file_name = function(index)

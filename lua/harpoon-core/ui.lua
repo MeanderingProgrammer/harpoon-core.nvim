@@ -18,8 +18,8 @@ M.nav_file = function(index)
     if file_name == nil then
         return
     end
-    local bufnr = get_or_create_buffer(file_name)
-    vim.api.nvim_set_current_buf(bufnr)
+    local file_bufnr = get_or_create_buffer(file_name)
+    vim.api.nvim_set_current_buf(file_bufnr)
 end
 
 local function center_pad(outer, inner)
@@ -42,7 +42,7 @@ local function create_window()
     window_id = window.win_id
 end
 
-local function close()
+M.close = function()
     if window_id ~= nil then
         vim.api.nvim_win_close(window_id, true)
         bufnr = nil
@@ -52,7 +52,7 @@ end
 
 M.toggle_quick_menu = function()
     if bufnr ~= nil or window_id ~= nil then
-        close()
+        M.close()
         return
     end
 
@@ -84,7 +84,7 @@ M.toggle_quick_menu = function()
         buffer = bufnr,
         nested = true,
         callback = function()
-            close()
+            M.close()
         end,
     })
     vim.api.nvim_create_autocmd('BufWriteCmd', {

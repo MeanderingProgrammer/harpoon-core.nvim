@@ -13,6 +13,9 @@ Looks like ThePrimeagen expresses some similar thoughts based on:
 
 # TODO
 
-* Based on how we handle deleting and moving files `add_file` method may
-  need to have first available index logic, as opposed to always appending
-  to the end of the table.
+* Figure out how we want to handle multiple neovim instances running at once
+  and setting bookmarks. Currently the `save` logic is simple and dumps the
+  entire contents to a file on any changes. This is based on a local state
+  which does not periodically read from the file. ThePrimeagen solution is to
+  only update at a project level, which seems like it would cover most cases
+  and be simple enough to implement.
