@@ -50,6 +50,18 @@ M.close = function()
     end
 end
 
+local function save_project()
+    if bufnr == nil then
+        return
+    end
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+    mark.clear()
+    for _, line in pairs(lines) do
+        local file_name = mark.absolute(line)
+        mark.add_file(file_name)
+    end
+end
+
 M.toggle_quick_menu = function()
     if bufnr ~= nil or window_id ~= nil then
         M.close()
@@ -83,15 +95,11 @@ M.toggle_quick_menu = function()
     vim.api.nvim_create_autocmd('BufLeave', {
         buffer = bufnr,
         nested = true,
-        callback = function()
-            M.close()
-        end,
+        callback = M.close,
     })
     vim.api.nvim_create_autocmd('BufWriteCmd', {
         buffer = bufnr,
-        callback = function()
-            -- TODO
-        end,
+        callback = save_project,
     })
 end
 

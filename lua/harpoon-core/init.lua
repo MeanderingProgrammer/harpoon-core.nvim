@@ -11,7 +11,7 @@ local function set_open_keymap(key, command)
             vim.cmd(command)
         end
         local line = vim.api.nvim_get_current_line()
-        vim.cmd('e ' .. mark.project() .. '/' .. line)
+        vim.cmd('e ' .. mark.absolute(line))
     end, { buffer = true, noremap = true, silent = true })
 end
 

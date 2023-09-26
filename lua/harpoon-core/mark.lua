@@ -18,15 +18,15 @@ M.setup = function()
     context.projects = projects
 end
 
-M.project = function()
+local function project()
     return vim.loop.cwd()
 end
 
 local function get_or_set_marks()
-    if context.projects[M.project()] == nil then
-        context.projects[M.project()] = { marks = {} }
+    if context.projects[project()] == nil then
+        context.projects[project()] = { marks = {} }
     end
-    return context.projects[M.project()].marks
+    return context.projects[project()].marks
 end
 
 M.get_files = function()
@@ -38,10 +38,16 @@ M.get_files = function()
     return files
 end
 
-local function get_current_file()
-    local file_name = vim.api.nvim_buf_get_name(0)
+M.absolute = function(file_name)
+    return path:new(project()):joinpath(file_name).filename
+end
+
+local function relative_file_name(file_name)
+    if file_name == nil then
+        file_name = vim.api.nvim_buf_get_name(0)
+    end
     if vim.fn.filereadable(file_name) == 1 then
-        return path:new(file_name):make_relative(M.project())
+        return path:new(file_name):make_relative(project())
     else
         return nil
     end
@@ -61,9 +67,14 @@ local function save()
     path:new(user_projects_file):write(projects, 'w')
 end
 
-M.add_file = function()
+M.clear = function()
+    context.projects[project()] = { marks = {} }
+    save()
+end
+
+M.add_file = function(file_name)
+    file_name = relative_file_name(file_name)
     local marks = get_or_set_marks()
-    local file_name = get_current_file()
     local index = file_index(marks, file_name)
     if file_name ~= nil and index == nil then
         table.insert(marks, { file_name = file_name })
@@ -71,9 +82,9 @@ M.add_file = function()
     end
 end
 
-M.rm_file = function()
+M.rm_file = function(file_name)
+    file_name = relative_file_name(file_name)
     local marks = get_or_set_marks()
-    local file_name = get_current_file()
     local index = file_index(marks, file_name)
     if file_name ~= nil and index ~= nil then
         table.remove(marks, index)
@@ -84,7 +95,7 @@ end
 M.get_file_name = function(index)
     local marks = get_or_set_marks()
     if #marks > 0 and index <= #marks then
-        return M.project() .. '/' .. marks[index].file_name
+        return M.absolute(marks[index].file_name)
     else
         return nil
     end
