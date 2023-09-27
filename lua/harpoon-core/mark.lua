@@ -67,8 +67,10 @@ local function filename_index(target_filename)
 end
 
 local function save()
-    local projects = vim.fn.json_encode(context.projects)
-    path:new(user_projects_file):write(projects, 'w')
+    local current_projects = read_projects(user_projects_file)
+    current_projects[project()] = { marks = get_marks() }
+    local projects_json = vim.fn.json_encode(current_projects)
+    path:new(user_projects_file):write(projects_json, 'w')
 end
 
 M.clear = function()
