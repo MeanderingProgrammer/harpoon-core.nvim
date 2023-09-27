@@ -81,8 +81,6 @@ View all project marks.
 
 You can go up and down the list, enter, delete or reorder. `q` and `<ESC>` exit and save the menu.
 
-* TODO - currently they just exit the menu without saving, unless `w` is used.
-
 You can also switch to any mark without bringing up the menu. Below example uses 3 as the target file.
 
 ```lua

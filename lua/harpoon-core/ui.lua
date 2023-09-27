@@ -69,14 +69,6 @@ local function create_window()
     window_id = window.win_id
 end
 
-M.close = function()
-    if window_id ~= nil then
-        vim.api.nvim_win_close(window_id, true)
-        bufnr = nil
-        window_id = nil
-    end
-end
-
 local function save_project()
     if bufnr ~= nil then
         mark.clear()
@@ -87,9 +79,18 @@ local function save_project()
     end
 end
 
+M.save_close = function()
+    if window_id ~= nil then
+        save_project()
+        vim.api.nvim_win_close(window_id, true)
+        bufnr = nil
+        window_id = nil
+    end
+end
+
 M.toggle_quick_menu = function()
     if bufnr ~= nil or window_id ~= nil then
-        M.close()
+        M.save_close()
         return
     end
 
@@ -109,7 +110,7 @@ M.toggle_quick_menu = function()
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
 
-    local close_command = '<cmd>lua require("harpoon-core.ui").close()<cr>'
+    local close_command = '<cmd>lua require("harpoon-core.ui").save_close()<cr>'
     vim.api.nvim_buf_set_keymap(bufnr, 'n', 'q', close_command, {})
     vim.api.nvim_buf_set_keymap(bufnr, 'n', '<esc>', close_command, {})
 
@@ -119,8 +120,7 @@ M.toggle_quick_menu = function()
             vim.api.nvim_buf_set_option(bufnr, 'modified', false)
         end,
     })
-    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = M.close })
-    -- TODO add additional cases where we want to save
+    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = M.save_close })
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
 end
 
