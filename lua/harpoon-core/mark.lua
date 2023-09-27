@@ -4,7 +4,6 @@ local path = require('plenary.path')
 local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
 
 local M = {}
-local context = {}
 
 local function read_json(file)
     return vim.json.decode(path:new(file):read())
@@ -18,9 +17,9 @@ local function read_projects(projects_file)
     return projects
 end
 
-M.setup = function()
-    context.projects = read_projects(user_projects_file)
-end
+local context = {
+    projects = read_projects(user_projects_file),
+}
 
 local function project()
     return vim.loop.cwd()

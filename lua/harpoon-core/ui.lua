@@ -1,3 +1,4 @@
+local harpoon = require('harpoon-core')
 local mark = require('harpoon-core.mark')
 local popup = require('plenary.popup')
 
@@ -5,12 +6,30 @@ local M = {}
 local bufnr = nil
 local window_id = nil
 
-M.open = function(filename, command)
+local function open(filename, command)
     if command ~= nil then
         vim.cmd(command)
     end
     vim.cmd('e ' .. mark.absolute(filename))
 end
+
+local function set_open_keymap(key, command)
+    vim.keymap.set('n', key, function()
+        local filename = vim.api.nvim_get_current_line()
+        open(filename, command)
+    end, { buffer = true, noremap = true, silent = true })
+end
+
+vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'harpoon-core',
+    group = vim.api.nvim_create_augroup('HarpoonCore', { clear = true }),
+    callback = function()
+        set_open_keymap('<cr>', nil)
+        set_open_keymap('<C-v>', 'vs')
+        set_open_keymap('<C-x>', 'sp')
+        set_open_keymap('<C-t>', 'tabnew')
+    end,
+})
 
 M.nav_next = function()
     --TODO
@@ -23,7 +42,7 @@ end
 M.nav_file = function(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
-        M.open(filename, nil)
+        open(filename, nil)
     end
 end
 
@@ -36,14 +55,17 @@ local function create_window()
     local width = 60
     local height = 10
     bufnr = vim.api.nvim_create_buf(false, false)
+    local hl_groups = harpoon.get_opts().highlight_groups
     local _, window = popup.create(bufnr, {
         title = 'Harpoon',
+        highlight = hl_groups.window,
         col = center_pad(vim.o.columns, width),
         minwidth = width,
         line = center_pad(vim.o.lines, height),
         minheight = height,
         borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     })
+    vim.api.nvim_win_set_option(window.border.win_id, 'winhl', 'Normal:' .. hl_groups.border)
     window_id = window.win_id
 end
 
@@ -56,13 +78,12 @@ M.close = function()
 end
 
 local function save_project()
-    if bufnr == nil then
-        return
-    end
-    mark.clear()
-    local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-    for _, filename in pairs(filenames) do
-        mark.add_file(mark.absolute(filename))
+    if bufnr ~= nil then
+        mark.clear()
+        local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+        for _, filename in pairs(filenames) do
+            mark.add_file(mark.absolute(filename))
+        end
     end
 end
 
@@ -83,7 +104,7 @@ M.toggle_quick_menu = function()
 
     vim.api.nvim_win_set_option(window_id, 'number', true)
     -- This a bit of spaghetti that we use to configure keymaps to do specific
-    -- things on harpoon-core files, these can be found in init.lua
+    -- things on harpoon-core files, these can be found at the top of this file
     vim.api.nvim_buf_set_option(bufnr, 'filetype', 'harpoon-core')
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
