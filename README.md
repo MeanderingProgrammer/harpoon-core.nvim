@@ -89,8 +89,6 @@ You can also switch to any mark without bringing up the menu. Below example uses
 
 You can also cycle the list in both directions.
 
-* TODO - this functionality is not yet implemented
-
 ```lua
 :lua require('harpoon-core.ui').nav_next()
 :lua require('harpoon-core.ui').nav_prev()

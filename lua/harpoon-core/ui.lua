@@ -31,18 +31,28 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
-M.nav_next = function()
-    --TODO
-end
-
-M.nav_prev = function()
-    --TODO
-end
-
 M.nav_file = function(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
         open(filename, nil)
+    end
+end
+
+M.nav_next = function()
+    local current_index = mark.current_index()
+    if current_index == nil or current_index == mark.length() then
+        M.nav_file(1)
+    else
+        M.nav_file(current_index + 1)
+    end
+end
+
+M.nav_prev = function()
+    local current_index = mark.current_index()
+    if current_index == nil or current_index == 1 then
+        M.nav_file(mark.length())
+    else
+        M.nav_file(current_index - 1)
     end
 end
 
@@ -94,6 +104,10 @@ M.toggle_quick_menu = function()
         return
     end
 
+    -- This must happen before we create the window, otherwise the current buffer
+    -- ends up being the harpoon window
+    local current_index = mark.current_index()
+
     create_window()
     if bufnr == nil or window_id == nil then
         return
@@ -102,6 +116,12 @@ M.toggle_quick_menu = function()
     local filenames = mark.get_filenames()
     vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
     vim.api.nvim_buf_set_lines(bufnr, 0, #filenames, false, filenames)
+
+    -- Move cursor to current file if it exists, cursor is already on first
+    -- line so movement needs to be offset by 1
+    if current_index ~= nil then
+        vim.cmd('+' .. current_index - 1)
+    end
 
     vim.api.nvim_win_set_option(window_id, 'number', true)
     -- This a bit of spaghetti that we use to configure keymaps to do specific

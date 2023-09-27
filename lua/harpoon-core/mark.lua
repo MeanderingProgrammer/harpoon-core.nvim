@@ -33,6 +33,10 @@ local function get_marks()
     return context.projects[project()].marks
 end
 
+M.length = function()
+    return #get_marks()
+end
+
 M.get_filenames = function()
     local filenames = {}
     for _, mark in pairs(get_marks()) do
@@ -95,6 +99,11 @@ M.rm_file = function(filename)
         table.remove(marks, index)
         save()
     end
+end
+
+M.current_index = function()
+    local filename = relative_filename(nil)
+    return filename_index(filename)
 end
 
 M.get_filename = function(index)
