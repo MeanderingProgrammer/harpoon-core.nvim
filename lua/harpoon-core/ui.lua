@@ -5,21 +5,18 @@ local M = {}
 local bufnr = nil
 local window_id = nil
 
-local function get_or_create_buffer(file_name)
-    if vim.fn.bufexists(file_name) ~= 0 then
-        return vim.fn.bufnr(file_name)
-    else
-        return vim.fn.bufadd(file_name)
+M.open = function(filename, command)
+    if command ~= nil then
+        vim.cmd(command)
     end
+    vim.cmd('e ' .. mark.absolute(filename))
 end
 
 M.nav_file = function(index)
-    local file_name = mark.get_file_name(index)
-    if file_name == nil then
-        return
+    local filename = mark.get_filename(index)
+    if filename ~= nil then
+        M.open(filename, nil)
     end
-    local file_bufnr = get_or_create_buffer(file_name)
-    vim.api.nvim_set_current_buf(file_bufnr)
 end
 
 local function center_pad(outer, inner)
@@ -54,11 +51,10 @@ local function save_project()
     if bufnr == nil then
         return
     end
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
     mark.clear()
-    for _, line in pairs(lines) do
-        local file_name = mark.absolute(line)
-        mark.add_file(file_name)
+    local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+    for _, filename in pairs(filenames) do
+        mark.add_file(mark.absolute(filename))
     end
 end
 
@@ -73,11 +69,13 @@ M.toggle_quick_menu = function()
         return
     end
 
-    local contents = mark.get_files()
+    local filenames = mark.get_filenames()
     vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
-    vim.api.nvim_buf_set_lines(bufnr, 0, #contents, false, contents)
+    vim.api.nvim_buf_set_lines(bufnr, 0, #filenames, false, filenames)
 
     vim.api.nvim_win_set_option(window_id, 'number', true)
+    -- This a bit of spaghetti that we use to configure keymaps to do specific
+    -- things on harpoon-core files, these can be found in init.lua
     vim.api.nvim_buf_set_option(bufnr, 'filetype', 'harpoon-core')
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
@@ -92,15 +90,8 @@ M.toggle_quick_menu = function()
             vim.api.nvim_buf_set_option(bufnr, 'modified', false)
         end,
     })
-    vim.api.nvim_create_autocmd('BufLeave', {
-        buffer = bufnr,
-        nested = true,
-        callback = M.close,
-    })
-    vim.api.nvim_create_autocmd('BufWriteCmd', {
-        buffer = bufnr,
-        callback = save_project,
-    })
+    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = M.close })
+    vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
 end
 
 return M

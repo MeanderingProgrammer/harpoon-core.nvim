@@ -1,19 +1,17 @@
 local mark = require('harpoon-core.mark')
+local ui = require('harpoon-core.ui')
 
 local M = {}
 local context = {}
 
-local group = vim.api.nvim_create_augroup('HarpoonCore', { clear = true })
-
 local function set_open_keymap(key, command)
     vim.keymap.set('n', key, function()
-        if command ~= nil then
-            vim.cmd(command)
-        end
-        local line = vim.api.nvim_get_current_line()
-        vim.cmd('e ' .. mark.absolute(line))
+        local filename = vim.api.nvim_get_current_line()
+        ui.open(filename, command)
     end, { buffer = true, noremap = true, silent = true })
 end
+
+local group = vim.api.nvim_create_augroup('HarpoonCore', { clear = true })
 
 vim.api.nvim_create_autocmd('FileType', {
     pattern = 'harpoon-core',
