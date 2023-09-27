@@ -48,6 +48,9 @@ project level, but I am unsure if there is a nice way to do this.
 
 This section is a copy paste from the original, with some minor changes / additions.
 
+You can see an example config which assigns all of these commands to keymaps
+[here](https://github.com/MeanderingProgrammer/dotfiles/blob/main/.config/nvim/lua/plugins/harpooncore.lua)
+
 Here we'll explain how to wield the power of the harpoon.
 
 ## Marks
@@ -56,88 +59,43 @@ Here we'll explain how to wield the power of the harpoon.
 
 You mark files you want to revisit later on.
 
-Using Vim command:
-
 ```lua
 :lua require('harpoon-core.mark').add_file()
 ```
 
-Using keymap:
-
-```lua
-local mark = require('harpoon-core.mark')
-vim.keymap.set('n', '<leader>a', mark.add_file, { desc = 'Harpoon: Add current file' })
-```
-
 ### Removing
 
-Can also be removed.
-
-Using Vim command:
+These can also be removed.
 
 ```lua
 :lua require('harpoon-core.mark').rm_file()
-```
-
-Using keymap:
-
-```lua
-local mark = require('harpoon-core.mark')
-vim.keymap.set('n', '<leader>r', mark.rm_file, { desc = 'Harpoon: Remove current file' })
 ```
 
 ## File Navigation
 
 View all project marks.
 
-Using Vim command:
-
 ```lua
 :lua require('harpoon-core.ui').toggle_quick_menu()
-```
-
-Using keymap:
-
-```lua
-local ui = require('harpoon-core.ui')
-vim.keymap.set('n', '<leader><leader>', ui.toggle_quick_menu, { desc = 'Harpoon: Toggle UI' })
 ```
 
 You can go up and down the list, enter, delete or reorder. `q` and `<ESC>` exit and save the menu.
 
 * TODO - currently they just exit the menu without saving, unless `w` is used.
 
-You can also switch to any mark without bringing up the menu. Below examples use 3 as the target file.
-
-Using Vim command:
+You can also switch to any mark without bringing up the menu. Below example uses 3 as the target file.
 
 ```lua
 :lua require('harpoon-core.ui').nav_file(3)
 ```
 
-Using keymap:
-
-```lua
-local ui = require('harpoon-core.ui')
-vim.keymap.set('n', '<leader>3', function() ui.nav_file(3) end, { desc = 'Harpoon: Open file 3' })
-```
 You can also cycle the list in both directions.
 
 * TODO - this functionality is not yet implemented
 
-Using Vim command:
-
 ```lua
 :lua require('harpoon-core.ui').nav_next()
 :lua require('harpoon-core.ui').nav_prev()
-```
-
-Using keymap:
-
-```lua
-local ui = require('harpoon-core.ui')
-vim.keymap.set('n', '<leader>n', ui.nav_next, { desc = 'Harpoon: Next file' })
-vim.keymap.set('n', '<leader>p', ui.nav_prev, { desc = 'Harpoon: Previous file' })
 ```
 
 From the quickmenu, open a file in:
