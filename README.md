@@ -99,3 +99,7 @@ From the quickmenu, open a file in:
 * vertical split with `<ctrl-v>`
 * horizontal split with `<ctrl-x>`
 * new tab with `<ctrl-t>`
+
+# TODO
+
+* Support marks split by git branch in addition to project
