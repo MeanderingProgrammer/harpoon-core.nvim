@@ -49,7 +49,7 @@ project level, but I am unsure if there is a nice way to do this.
 This section is a copy paste from the original, with some minor changes / additions.
 
 You can see an example config which assigns all of these commands to keymaps
-[here](https://github.com/MeanderingProgrammer/dotfiles/blob/main/.config/nvim/lua/plugins/harpooncore.lua)
+[here](https://github.com/MeanderingProgrammer/dotfiles/blob/main/.config/nvim/lua/plugins/harpooncore.lua).
 
 Here we'll explain how to wield the power of the harpoon.
 
