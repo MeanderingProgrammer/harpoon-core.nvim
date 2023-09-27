@@ -107,7 +107,7 @@ You can go up and down the list, enter, delete or reorder. `q` and `<ESC>` exit 
 
 * TODO - currently they just exit the menu without saving, unless `w` is used.
 
-You also can switch to any mark without bringing up the menu. Below examples use 3 as the target file.
+You can also switch to any mark without bringing up the menu. Below examples use 3 as the target file.
 
 Using Vim command:
 
@@ -134,8 +134,10 @@ Using Vim command:
 
 Using keymap:
 
-```
-TODO
+```lua
+local ui = require('harpoon-core.ui')
+vim.keymap.set('n', '<leader>n', ui.nav_next, { desc = 'Harpoon: Next file' })
+vim.keymap.set('n', '<leader>p', ui.nav_prev, { desc = 'Harpoon: Previous file' })
 ```
 
 From the quickmenu, open a file in:

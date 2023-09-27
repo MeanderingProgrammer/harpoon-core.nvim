@@ -12,6 +12,14 @@ M.open = function(filename, command)
     vim.cmd('e ' .. mark.absolute(filename))
 end
 
+M.nav_next = function()
+    --TODO
+end
+
+M.nav_prev = function()
+    --TODO
+end
+
 M.nav_file = function(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
@@ -91,6 +99,7 @@ M.toggle_quick_menu = function()
         end,
     })
     vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = M.close })
+    -- TODO add additional cases where we want to save
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
 end
 
