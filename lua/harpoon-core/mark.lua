@@ -33,11 +33,11 @@ local function get_marks()
     return context.projects[project()].marks
 end
 
-M.length = function()
+function M.length()
     return #get_marks()
 end
 
-M.get_filenames = function()
+function M.get_filenames()
     local filenames = {}
     for _, mark in pairs(get_marks()) do
         table.insert(filenames, mark.filename)
@@ -45,7 +45,7 @@ M.get_filenames = function()
     return filenames
 end
 
-M.absolute = function(filename)
+function M.absolute(filename)
     return path:new(project()):joinpath(filename).filename
 end
 
@@ -76,12 +76,12 @@ local function save()
     path:new(user_projects_file):write(projects_json, 'w')
 end
 
-M.clear = function()
+function M.clear()
     context.projects[project()] = { marks = {} }
     save()
 end
 
-M.add_file = function(filename)
+function M.add_file(filename)
     filename = relative_filename(filename)
     local index = filename_index(filename)
     if filename ~= nil and index == nil then
@@ -91,7 +91,7 @@ M.add_file = function(filename)
     end
 end
 
-M.rm_file = function(filename)
+function M.rm_file(filename)
     filename = relative_filename(filename)
     local index = filename_index(filename)
     if filename ~= nil and index ~= nil then
@@ -101,12 +101,12 @@ M.rm_file = function(filename)
     end
 end
 
-M.current_index = function()
+function M.current_index()
     local filename = relative_filename(nil)
     return filename_index(filename)
 end
 
-M.get_filename = function(index)
+function M.get_filename(index)
     local filenames = M.get_filenames()
     if #filenames > 0 and index <= #filenames then
         return filenames[index]

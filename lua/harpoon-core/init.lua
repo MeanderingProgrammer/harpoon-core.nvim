@@ -1,7 +1,7 @@
 local M = {}
 local context = {}
 
-M.setup = function(opts)
+function M.setup(opts)
     opts = opts or {}
     local default_opts = {
         highlight_groups = {
@@ -12,7 +12,7 @@ M.setup = function(opts)
     context.opts = vim.tbl_deep_extend('force', default_opts, opts)
 end
 
-M.get_opts = function()
+function M.get_opts()
     return context.opts
 end
 

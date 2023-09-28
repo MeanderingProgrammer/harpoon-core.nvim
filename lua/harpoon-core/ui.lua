@@ -31,14 +31,14 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
-M.nav_file = function(index)
+function M.nav_file(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
         open(filename, nil)
     end
 end
 
-M.nav_next = function()
+function M.nav_next()
     local current_index = mark.current_index()
     if current_index == nil or current_index == mark.length() then
         M.nav_file(1)
@@ -47,7 +47,7 @@ M.nav_next = function()
     end
 end
 
-M.nav_prev = function()
+function M.nav_prev()
     local current_index = mark.current_index()
     if current_index == nil or current_index == 1 then
         M.nav_file(mark.length())
@@ -89,7 +89,7 @@ local function save_project()
     end
 end
 
-M.save_close = function()
+function M.save_close()
     if window_id ~= nil then
         save_project()
         vim.api.nvim_win_close(window_id, true)
@@ -98,7 +98,7 @@ M.save_close = function()
     end
 end
 
-M.toggle_quick_menu = function()
+function M.toggle_quick_menu()
     if bufnr ~= nil or window_id ~= nil then
         M.save_close()
         return
