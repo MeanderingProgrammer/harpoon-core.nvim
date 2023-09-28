@@ -13,7 +13,7 @@ local function open(filename, command)
     vim.cmd('e ' .. mark.absolute(filename))
 end
 
-local function set_open_keymap(key, command)
+local function open_keymap(key, command)
     vim.keymap.set('n', key, function()
         local filename = vim.api.nvim_get_current_line()
         open(filename, command)
@@ -24,10 +24,10 @@ vim.api.nvim_create_autocmd('FileType', {
     pattern = 'harpoon-core',
     group = vim.api.nvim_create_augroup('HarpoonCore', { clear = true }),
     callback = function()
-        set_open_keymap('<cr>', nil)
-        set_open_keymap('<C-v>', 'vs')
-        set_open_keymap('<C-x>', 'sp')
-        set_open_keymap('<C-t>', 'tabnew')
+        open_keymap('<cr>', nil)
+        open_keymap('<C-v>', 'vs')
+        open_keymap('<C-x>', 'sp')
+        open_keymap('<C-t>', 'tabnew')
     end,
 })
 
