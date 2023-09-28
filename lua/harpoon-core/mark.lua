@@ -1,3 +1,5 @@
+local harpoon = require('harpoon-core')
+local git = require('harpoon-core.git')
 local path = require('plenary.path')
 
 -- Typically resolves to ~/.local/share/nvim
@@ -21,8 +23,20 @@ local context = {
     projects = read_projects(user_projects_file),
 }
 
-local function project()
+local function root()
     return vim.loop.cwd()
+end
+
+local function project()
+    local branch = nil
+    if harpoon.get_opts().mark_branch then
+        branch = git.branch()
+    end
+    if branch == nil then
+        return root()
+    else
+        return root() .. '-' .. branch
+    end
 end
 
 local function get_marks()
@@ -46,7 +60,7 @@ function M.get_filenames()
 end
 
 function M.absolute(filename)
-    return path:new(project()):joinpath(filename).filename
+    return path:new(root()):joinpath(filename).filename
 end
 
 local function relative_filename(filename)
@@ -54,7 +68,7 @@ local function relative_filename(filename)
         filename = vim.api.nvim_buf_get_name(0)
     end
     if vim.fn.filereadable(filename) == 1 then
-        return path:new(filename):make_relative(project())
+        return path:new(filename):make_relative(root())
     else
         return nil
     end

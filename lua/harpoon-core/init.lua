@@ -4,6 +4,9 @@ local context = {}
 function M.setup(opts)
     opts = opts or {}
     local default_opts = {
+        -- Set marks specific to each git branch inside git repository
+        mark_branch = false,
+        -- Highlight groups to use for various components
         highlight_groups = {
             window = 'HarpoonWindow',
             border = 'HarpoonBorder',

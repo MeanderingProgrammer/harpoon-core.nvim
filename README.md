@@ -23,6 +23,8 @@ project level, but I am unsure if there is a nice way to do this.
 
 * Supports running multiple different projects at the same time without
   losing any changes to your marked files.
+* Invalid marks get filtered out, only valid changes propagate to marks.
+* Marking files at a branch granularity if `mark_branch` option is set
 
 # Limitations
 
