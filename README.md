@@ -105,4 +105,3 @@ From the quickmenu, open a file in:
 # TODO
 
 * If selected file is already open in some window, highlight the window instead of opening again
-* Open relative to buffer user was on before opening harpoon window

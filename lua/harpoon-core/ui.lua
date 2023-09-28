@@ -6,7 +6,27 @@ local M = {}
 local bufnr = nil
 local window_id = nil
 
+local function save_project()
+    if bufnr ~= nil then
+        mark.clear()
+        local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+        for _, filename in pairs(filenames) do
+            mark.add_file(mark.absolute(filename))
+        end
+    end
+end
+
+function M.save_close()
+    if window_id ~= nil then
+        save_project()
+        vim.api.nvim_win_close(window_id, true)
+        bufnr = nil
+        window_id = nil
+    end
+end
+
 local function open(filename, command)
+    M.save_close()
     if command ~= nil then
         vim.cmd(command)
     end
@@ -56,11 +76,6 @@ function M.nav_prev()
     end
 end
 
-local function center_pad(outer, inner)
-    local extra = outer - inner
-    return math.floor(extra / 2)
-end
-
 local function create_window()
     local width = 60
     local height = 10
@@ -69,33 +84,14 @@ local function create_window()
     local _, window = popup.create(bufnr, {
         title = 'Harpoon',
         highlight = hl_groups.window,
-        col = center_pad(vim.o.columns, width),
+        col = math.floor((vim.o.columns - width) / 2),
         minwidth = width,
-        line = center_pad(vim.o.lines, height),
+        line = math.floor((vim.o.lines - height) / 2),
         minheight = height,
         borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     })
     vim.api.nvim_win_set_option(window.border.win_id, 'winhl', 'Normal:' .. hl_groups.border)
     window_id = window.win_id
-end
-
-local function save_project()
-    if bufnr ~= nil then
-        mark.clear()
-        local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-        for _, filename in pairs(filenames) do
-            mark.add_file(mark.absolute(filename))
-        end
-    end
-end
-
-function M.save_close()
-    if window_id ~= nil then
-        save_project()
-        vim.api.nvim_win_close(window_id, true)
-        bufnr = nil
-        window_id = nil
-    end
 end
 
 function M.toggle_quick_menu()
