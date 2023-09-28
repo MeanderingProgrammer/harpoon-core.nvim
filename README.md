@@ -104,4 +104,5 @@ From the quickmenu, open a file in:
 
 # TODO
 
-* Support marks split by git branch in addition to project
+* If selected file is already open in some window, highlight the window instead of opening again
+* Open relative to buffer user was on before opening harpoon window
