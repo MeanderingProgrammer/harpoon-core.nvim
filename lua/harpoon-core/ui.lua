@@ -25,12 +25,31 @@ function M.save_close()
     end
 end
 
+local function get_existing(filename)
+    -- bufwinid is limited in scope to current tab, otherwise it would be perfect
+    for _, tabpage in pairs(vim.api.nvim_list_tabpages()) do
+        for _, tabpage_window_id in pairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+            local tabpage_bufnr = vim.api.nvim_win_get_buf(tabpage_window_id)
+            if vim.fn.bufname(tabpage_bufnr) == filename then
+                return tabpage, tabpage_window_id
+            end
+        end
+    end
+    return nil, nil
+end
+
 local function open(filename, command)
     M.save_close()
-    if command ~= nil then
-        vim.cmd(command)
+    local tabpage, tabpage_window_id = get_existing(filename)
+    if tabpage ~= nil and tabpage_window_id ~= nil then
+        vim.api.nvim_set_current_tabpage(tabpage)
+        vim.api.nvim_set_current_win(tabpage_window_id)
+    else
+        if command ~= nil then
+            vim.cmd(command)
+        end
+        vim.cmd('e ' .. filename)
     end
-    vim.cmd('e ' .. mark.absolute(filename))
 end
 
 local function open_keymap(key, command)

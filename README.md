@@ -25,6 +25,8 @@ project level, but I am unsure if there is a nice way to do this.
   losing any changes to your marked files.
 * Invalid marks get filtered out, only valid changes propagate to marks.
 * Marking files at a branch granularity if `mark_branch` option is set.
+* Will set active window to specified file if it is already open rather
+  than opening another window, works across tabs.
 
 # Limitations
 
@@ -109,7 +111,3 @@ From the quickmenu, open a file in:
 * vertical split with `<ctrl-v>`
 * horizontal split with `<ctrl-x>`
 * new tab with `<ctrl-t>`
-
-# TODO
-
-* If selected file is already open in some window, highlight the window instead of opening again
