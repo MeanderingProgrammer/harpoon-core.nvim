@@ -71,10 +71,6 @@ function M.get_filenames()
     return filenames
 end
 
-function M.absolute(filename)
-    return path:new(root()):joinpath(filename).filename
-end
-
 local function relative_filename(filename)
     if filename == nil then
         filename = vim.api.nvim_buf_get_name(0)
@@ -97,13 +93,24 @@ end
 
 local function save()
     local current_projects = read_projects(user_projects_file)
-    current_projects[project()] = { marks = get_marks() }
-    local projects_json = vim.fn.json_encode(current_projects)
-    path:new(user_projects_file):write(projects_json, 'w')
+    local new_marks = { marks = get_marks() }
+    if not vim.deep_equal(current_projects[project()], new_marks) then
+        current_projects[project()] = new_marks
+        local projects_json = vim.fn.json_encode(current_projects)
+        path:new(user_projects_file):write(projects_json, 'w')
+    end
 end
 
-function M.clear()
-    context.projects[project()] = { marks = {} }
+function M.set_project(filenames)
+    local marks = {}
+    for _, filename in pairs(filenames) do
+        filename = path:new(root()):joinpath(filename).filename
+        filename = relative_filename(filename)
+        if filename ~= nil then
+            table.insert(marks, { filename = filename })
+        end
+    end
+    context.projects[project()] = { marks = marks }
     save()
 end
 

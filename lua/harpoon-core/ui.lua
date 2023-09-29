@@ -8,11 +8,8 @@ local window_id = nil
 
 local function save_project()
     if bufnr ~= nil then
-        mark.clear()
         local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-        for _, filename in pairs(filenames) do
-            mark.add_file(mark.absolute(filename))
-        end
+        mark.set_project(filenames)
     end
 end
 
