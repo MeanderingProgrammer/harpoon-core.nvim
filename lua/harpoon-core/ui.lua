@@ -13,7 +13,7 @@ local function save_project()
     end
 end
 
-function M.save_close()
+local function save_close()
     if window_id ~= nil then
         save_project()
         vim.api.nvim_win_close(window_id, true)
@@ -35,8 +35,8 @@ local function get_existing(filename)
     return nil
 end
 
-local function open(filename, command)
-    M.save_close()
+function M.open(filename, command)
+    save_close()
     local existing_window_id = nil
     if harpoon.get_opts().use_existing then
         existing_window_id = get_existing(filename)
@@ -51,28 +51,10 @@ local function open(filename, command)
     end
 end
 
-local function open_keymap(key, command)
-    vim.keymap.set('n', key, function()
-        local filename = vim.api.nvim_get_current_line()
-        open(filename, command)
-    end, { buffer = true, noremap = true, silent = true })
-end
-
-vim.api.nvim_create_autocmd('FileType', {
-    pattern = 'harpoon-core',
-    group = vim.api.nvim_create_augroup('HarpoonCore', { clear = true }),
-    callback = function()
-        open_keymap('<cr>', nil)
-        open_keymap('<C-v>', 'vs')
-        open_keymap('<C-x>', 'sp')
-        open_keymap('<C-t>', 'tabnew')
-    end,
-})
-
 function M.nav_file(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
-        open(filename, nil)
+        M.open(filename, nil)
     end
 end
 
@@ -114,7 +96,7 @@ end
 
 function M.toggle_quick_menu()
     if bufnr ~= nil or window_id ~= nil then
-        M.save_close()
+        save_close()
         return
     end
 
@@ -139,14 +121,13 @@ function M.toggle_quick_menu()
 
     vim.api.nvim_win_set_option(window_id, 'number', true)
     -- This a bit of spaghetti that we use to configure keymaps to do specific
-    -- things on harpoon-core files, these can be found at the top of this file
+    -- things on harpoon-core files, these can be found in plugin/harpoon-core.lua
     vim.api.nvim_buf_set_option(bufnr, 'filetype', 'harpoon-core')
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
 
-    local close_command = '<cmd>lua require("harpoon-core.ui").save_close()<cr>'
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', 'q', close_command, {})
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<esc>', close_command, {})
+    vim.keymap.set('n', 'q', save_close, { buffer = bufnr })
+    vim.keymap.set('n', '<esc>', save_close, { buffer = bufnr })
 
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         buffer = bufnr,
@@ -154,7 +135,7 @@ function M.toggle_quick_menu()
             vim.api.nvim_buf_set_option(bufnr, 'modified', false)
         end,
     })
-    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = M.save_close })
+    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = save_close })
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
 end
 
