@@ -62,6 +62,11 @@ are a couple of intentional differences in behavior:
             use_existing = true,
             -- Set marks specific to each git branch inside git repository
             mark_branch = false,
+            -- Settings for popup window
+            menu = {
+                width = 60,
+                height = 10,
+            },
             -- Highlight groups to use for various components
             highlight_groups = {
                 window = 'HarpoonWindow',

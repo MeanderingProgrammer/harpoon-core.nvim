@@ -77,8 +77,8 @@ function M.nav_prev()
 end
 
 local function create_window()
-    local width = 60
-    local height = 10
+    local width = harpoon.get_opts().menu.width
+    local height = harpoon.get_opts().menu.height
     bufnr = vim.api.nvim_create_buf(false, false)
     local hl_groups = harpoon.get_opts().highlight_groups
     local _, window = popup.create(bufnr, {
