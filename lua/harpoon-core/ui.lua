@@ -129,12 +129,10 @@ function M.toggle_quick_menu()
     vim.keymap.set('n', 'q', save_close, { buffer = bufnr })
     vim.keymap.set('n', '<esc>', save_close, { buffer = bufnr })
 
-    vim.api.nvim_create_autocmd('BufModifiedSet', {
-        buffer = bufnr,
-        callback = function()
-            vim.api.nvim_buf_set_option(bufnr, 'modified', false)
-        end,
-    })
+    local function set_unmodified()
+        vim.api.nvim_buf_set_option(bufnr, 'modified', false)
+    end
+    vim.api.nvim_create_autocmd('BufModifiedSet', { buffer = bufnr, callback = set_unmodified })
     vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = save_close })
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
 end
