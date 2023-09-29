@@ -94,6 +94,7 @@ end
 local function save()
     local current_projects = read_projects(user_projects_file)
     local new_marks = { marks = get_marks() }
+    ---@diagnostic disable-next-line: need-check-nil
     if not vim.deep_equal(current_projects[project()], new_marks) then
         current_projects[project()] = new_marks
         local projects_json = vim.fn.json_encode(current_projects)
@@ -104,7 +105,6 @@ end
 function M.set_project(filenames)
     local marks = {}
     for _, filename in pairs(filenames) do
-        filename = path:new(root()):joinpath(filename).filename
         filename = relative_filename(filename)
         if filename ~= nil then
             table.insert(marks, { filename = filename })
