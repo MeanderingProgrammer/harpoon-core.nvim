@@ -35,7 +35,7 @@ local function get_existing(filename)
     return nil
 end
 
-function M.open(filename, command)
+local function open(filename, command)
     save_close()
     local existing_window_id = nil
     if harpoon.get_opts().use_existing then
@@ -54,7 +54,7 @@ end
 function M.nav_file(index)
     local filename = mark.get_filename(index)
     if filename ~= nil then
-        M.open(filename, nil)
+        open(filename, nil)
     end
 end
 
@@ -94,6 +94,10 @@ local function create_window()
     window_id = window.win_id
 end
 
+local function nmap(key, callback)
+    vim.keymap.set('n', key, callback, { buffer = bufnr, noremap = true, silent = true })
+end
+
 function M.toggle_quick_menu()
     if bufnr ~= nil or window_id ~= nil then
         save_close()
@@ -120,21 +124,29 @@ function M.toggle_quick_menu()
     end
 
     vim.api.nvim_win_set_option(window_id, 'number', true)
-    -- This a bit of spaghetti that we use to configure keymaps to do specific
-    -- things on harpoon-core files, these can be found in plugin/harpoon-core.lua
-    vim.api.nvim_buf_set_option(bufnr, 'filetype', 'harpoon-core')
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
 
-    vim.keymap.set('n', 'q', save_close, { buffer = bufnr })
-    vim.keymap.set('n', '<esc>', save_close, { buffer = bufnr })
+    nmap('q', save_close)
+    nmap('<esc>', save_close)
+
+    local function open_keymap(key, command)
+        nmap(key, function()
+            local filename = vim.api.nvim_get_current_line()
+            open(filename, command)
+        end)
+    end
+    open_keymap('<cr>', nil)
+    open_keymap('<C-v>', 'vs')
+    open_keymap('<C-x>', 'sp')
+    open_keymap('<C-t>', 'tabnew')
 
     local function set_unmodified()
         vim.api.nvim_buf_set_option(bufnr, 'modified', false)
     end
     vim.api.nvim_create_autocmd('BufModifiedSet', { buffer = bufnr, callback = set_unmodified })
-    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = save_close })
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
+    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = save_close })
 end
 
 return M
