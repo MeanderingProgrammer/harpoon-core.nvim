@@ -37,7 +37,10 @@ end
 
 local function open(filename, command)
     M.save_close()
-    local existing_window_id = get_existing(filename)
+    local existing_window_id = nil
+    if harpoon.get_opts().use_existing then
+        existing_window_id = get_existing(filename)
+    end
     if existing_window_id ~= nil then
         vim.api.nvim_set_current_win(existing_window_id)
     else

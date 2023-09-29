@@ -25,8 +25,8 @@ project level, but I am unsure if there is a nice way to do this.
   losing any changes to your marked files.
 * Invalid marks get filtered out, only valid changes propagate to marks.
 * Marking files at a branch granularity if `mark_branch` option is set.
-* Will set active window to specified file if it is already open rather
-  than opening another window, works across tabs.
+* Will set active window to specified file if it is already open rather than
+  opening another window if `use_existing` option is set, works across tabs.
 
 # Limitations
 
@@ -45,6 +45,8 @@ project level, but I am unsure if there is a nice way to do this.
     },
     config = function()
         require('harpoon-core').setup({
+            -- Make existing windows active rather than creating a new window
+            use_existing = true,
             -- Set marks specific to each git branch inside git repository
             mark_branch = false,
             -- Highlight groups to use for various components
