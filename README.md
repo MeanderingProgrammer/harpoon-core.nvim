@@ -42,7 +42,15 @@ project level, but I am unsure if there is a nice way to do this.
         'nvim-lua/plenary.nvim',
     },
     config = function()
-        require('harpoon-core').setup({})
+        require('harpoon-core').setup({
+            -- Set marks specific to each git branch inside git repository
+            mark_branch = false,
+            -- Highlight groups to use for various components
+            highlight_groups = {
+                window = 'HarpoonWindow',
+                border = 'HarpoonBorder',
+            },
+        })
     end,
 }
 ```

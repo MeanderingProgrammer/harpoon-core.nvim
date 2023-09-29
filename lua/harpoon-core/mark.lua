@@ -2,7 +2,19 @@ local harpoon = require('harpoon-core')
 local git = require('harpoon-core.git')
 local path = require('plenary.path')
 
--- Typically resolves to ~/.local/share/nvim
+--[[
+Path typically resolves to ~/.local/share/nvim/harpoon-core.json
+Projects are stored in the following format:
+{
+    "<absolute_path_to_project_root><-brance_name>?": {
+        "marks": [
+            { "filename": "<marked_file_relative_path_from_project_root>" },
+            ...
+        ]
+    },
+    ...
+}
+--]]
 local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
 
 local M = {}
