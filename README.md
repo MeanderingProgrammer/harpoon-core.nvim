@@ -33,6 +33,19 @@ project level, but I am unsure if there is a nice way to do this.
 * Having the same project open in multiple instances of Neovim will cause
   changes to your marked files to get clobbered.
 
+# Differences from Original
+
+While many of the publically exposed behaviors have been copied to be nearly exact there
+are a couple of intentional differences in behavior:
+
+* Invalid files are never saved to your marks. When editing you can add whatever
+  lines you want to the preview, but if it doesn't point to an actual file it'll
+  be thrown out immediately and never persisted. This will also happen if you later
+  delete a file after the first time you open the preview window.
+* As a consequence of the above empty lines are also not allowed. Though there may be
+  some value in having your shortcuts remain consistent even when some file is removed
+  this implementation avoids having placeholder slots that need special handling.
+
 # Install
 
 ## Lazy.nvim
