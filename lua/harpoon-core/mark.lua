@@ -6,9 +6,12 @@ local path = require('plenary.path')
 Path typically resolves to ~/.local/share/nvim/harpoon-core.json
 Projects are stored in the following format:
 {
-    "<absolute_path_to_project_root><-brance_name>?": {
+    "<absolute_path_to_project_root><-brance_name>": {
         "marks": [
-            { "filename": "<marked_file_relative_path_from_project_root>" },
+            {
+                "filename": "<marked_file_relative_path_from_project_root>",
+                "cursor": [ <row>, <column> ],
+            },
             ...
         ]
     },
@@ -114,18 +117,21 @@ function M.set_project(filenames)
     save()
 end
 
-function M.add_file(filename)
-    filename = relative_filename(filename)
+function M.add_file()
+    local filename = relative_filename(nil)
     local index = filename_index(filename)
     if filename ~= nil and index == nil then
         local marks = get_marks()
-        table.insert(marks, { filename = filename })
+        table.insert(marks, {
+            filename = filename,
+            cursor = vim.api.nvim_win_get_cursor(0),
+        })
         save()
     end
 end
 
-function M.rm_file(filename)
-    filename = relative_filename(filename)
+function M.rm_file()
+    local filename = relative_filename(nil)
     local index = filename_index(filename)
     if filename ~= nil and index ~= nil then
         local marks = get_marks()
