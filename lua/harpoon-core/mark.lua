@@ -85,6 +85,15 @@ local function relative_filename(filename)
     end
 end
 
+local function get_mark(target_filename)
+    for _, mark in pairs(get_marks()) do
+        if mark.filename == target_filename then
+            return mark
+        end
+    end
+    return nil
+end
+
 local function filename_index(target_filename)
     for i, filename in pairs(M.get_filenames()) do
         if filename == target_filename then
@@ -106,14 +115,19 @@ local function save()
 end
 
 function M.set_project(filenames)
-    local marks = {}
+    local new_marks = {}
     for _, filename in pairs(filenames) do
         filename = relative_filename(filename)
         if filename ~= nil then
-            table.insert(marks, { filename = filename })
+            local mark = get_mark(filename)
+            if mark ~= nil then
+                table.insert(new_marks, mark)
+            else
+                table.insert(new_marks, { filename = filename })
+            end
         end
     end
-    context.projects[project()] = { marks = marks }
+    context.projects[project()] = { marks = new_marks }
     save()
 end
 
