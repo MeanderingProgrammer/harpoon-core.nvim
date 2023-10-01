@@ -63,20 +63,20 @@ function M.nav_file(index)
 end
 
 function M.nav_next()
-    local current_index = marker.current_index()
-    if current_index == nil or current_index == marker.length() then
+    local index, _ = marker.current()
+    if index == nil or index == marker.length() then
         M.nav_file(1)
     else
-        M.nav_file(current_index + 1)
+        M.nav_file(index + 1)
     end
 end
 
 function M.nav_prev()
-    local current_index = marker.current_index()
-    if current_index == nil or current_index == 1 then
+    local index, _ = marker.current()
+    if index == nil or index == 1 then
         M.nav_file(marker.length())
     else
-        M.nav_file(current_index - 1)
+        M.nav_file(index - 1)
     end
 end
 
@@ -110,7 +110,7 @@ function M.toggle_quick_menu()
 
     -- This must happen before we create the window, otherwise the current buffer
     -- ends up being the harpoon window
-    local current_index = marker.current_index()
+    local index, _ = marker.current()
 
     create_window()
     if bufnr == nil or window_id == nil then
@@ -126,8 +126,8 @@ function M.toggle_quick_menu()
 
     -- Move cursor to current file if it exists, cursor is already on first
     -- line so movement needs to be offset by 1
-    if current_index ~= nil then
-        vim.cmd('+' .. current_index - 1)
+    if index ~= nil then
+        vim.cmd('+' .. index - 1)
     end
 
     vim.api.nvim_win_set_option(window_id, 'number', true)

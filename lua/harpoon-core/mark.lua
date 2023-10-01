@@ -144,10 +144,9 @@ function M.rm_file()
     end
 end
 
-function M.current_index()
+function M.current()
     local filename = relative(nil)
-    local index, _ = M.get_by_filename(filename)
-    return index
+    return M.get_by_filename(filename)
 end
 
 return M
