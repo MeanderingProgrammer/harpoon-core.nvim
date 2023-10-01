@@ -4,11 +4,11 @@ Neovim harpoon plugin, but only the core bits.
 
 Many thanks to [ThePrimeagen](https://github.com/ThePrimeagen), this
 implementation takes many ideas from the original
-[harpoon](https://github.com/ThePrimeagen/harpoon) plugin, as well
-as various naming conventions for the commonly used publically exposed methods.
+[harpoon](https://github.com/ThePrimeagen/harpoon) plugin, as well as
+various naming conventions for the commonly used publically exposed methods.
 
-The idea with this version is, I like all the file marking and switch logic that's
-part of `harpoon`, but am not interested in all of the TMUX / terminal stuff.
+The idea is I like all the file marking and switch logic that's part of `harpoon`,
+but am not interested in all of the TMUX / terminal stuff.
 
 Looks like `ThePrimeagen` expresses some similar thoughts based on:
 [issue-255](https://github.com/ThePrimeagen/harpoon/issues/255).
@@ -16,13 +16,10 @@ Looks like `ThePrimeagen` expresses some similar thoughts based on:
 There are pretty large changes in this implementation so mapping the 2 outside
 of what is available publically is not straightforward.
 
-Perhaps in the future can add some support for storing other information at a
-project level, but I am unsure if there is a nice way to do this.
-
 # Features
 
-* Supports running multiple different projects at the same time without
-  losing any changes to your marked files.
+* Supports running multiple different projects at the same time without losing any
+  changes to your marked files.
 * Invalid marks get filtered out, only valid changes propagate to marks.
 * Marking files at a branch granularity if `mark_branch` option is set.
 * Will set active window to specified file if it is already open rather than
@@ -31,21 +28,22 @@ project level, but I am unsure if there is a nice way to do this.
 
 # Limitations
 
-* Having the same project open in multiple instances of Neovim will cause
-  changes to your marked files to get clobbered.
+* Having the same project open in multiple instances of Neovim will cause changes to
+  your marked files to get clobbered.
 
 # Differences from Original
 
 While many of the publically exposed behaviors have been copied to be nearly exact there
 are a couple of intentional differences in behavior:
 
-* Invalid files are never saved to your marks. When editing you can add whatever
-  lines you want to the preview, but if it doesn't point to an actual file it'll
-  be thrown out immediately and never persisted. This will also happen if you later
-  delete a file after the first time you open the preview window.
+* Invalid files are never saved to your marks. When editing you can add whatever lines
+  you want to the preview, but if it doesn't point to an actual file it'll be thrown
+  out immediately and never persisted. This will also happen if you later delete a file
+  after the first time you open the preview window.
 * As a consequence of the above empty lines are also not allowed. Though there may be
   some value in having your shortcuts remain consistent even when some file is removed
   this implementation avoids having placeholder slots that need special handling.
+* Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218)
 
 # Install
 
@@ -114,7 +112,7 @@ View all project marks.
 :lua require('harpoon-core.ui').toggle_quick_menu()
 ```
 
-You can go up and down the list, enter, delete or reorder. `q` and `<ESC>` exit and save the menu.
+You can go up and down the list, enter, delete or reorder. `q` and `<esc>` exit and save the menu.
 
 You can also switch to any mark without bringing up the menu. Below example uses 3 as the target file.
 
@@ -131,6 +129,6 @@ You can also cycle the list in both directions.
 
 From the quickmenu, open a file in:
 
-* vertical split with `<ctrl-v>`
-* horizontal split with `<ctrl-x>`
-* new tab with `<ctrl-t>`
+* Vertical split with `<ctrl-v>`
+* Horizontal split with `<ctrl-x>`
+* New tab with `<ctrl-t>`
