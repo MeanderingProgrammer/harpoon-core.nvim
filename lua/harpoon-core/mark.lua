@@ -149,7 +149,7 @@ function M.current()
     return M.get_by_filename(filename)
 end
 
-function M.update_offset()
+function M.update_cursor()
     local filename = relative(nil)
     local _, mark = M.get_by_filename(filename)
     if mark ~= nil then
