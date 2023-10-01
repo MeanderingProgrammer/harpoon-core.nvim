@@ -27,6 +27,7 @@ project level, but I am unsure if there is a nice way to do this.
 * Marking files at a branch granularity if `mark_branch` option is set.
 * Will set active window to specified file if it is already open rather than
   opening another window if `use_existing` option is set, works across tabs.
+* Supports storing and using last cursor position if `use_cursor` option is set.
 
 # Limitations
 
