@@ -149,4 +149,13 @@ function M.current()
     return M.get_by_filename(filename)
 end
 
+function M.update_offset()
+    local filename = relative(nil)
+    local _, mark = M.get_by_filename(filename)
+    if mark ~= nil then
+        mark.cursor = vim.api.nvim_win_get_cursor(0)
+        save()
+    end
+end
+
 return M
