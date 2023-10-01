@@ -36,6 +36,9 @@ local function get_existing(filename)
 end
 
 local function open(mark, command)
+    if mark == nil then
+        return
+    end
     save_close()
     local existing_window_id = nil
     if harpoon.get_opts().use_existing then
@@ -55,10 +58,8 @@ local function open(mark, command)
 end
 
 function M.nav_file(index)
-    local mark = marker.get_mark_index(index)
-    if mark ~= nil then
-        open(mark, nil)
-    end
+    local mark = marker.get_by_index(index)
+    open(mark, nil)
 end
 
 function M.nav_next()
@@ -116,7 +117,10 @@ function M.toggle_quick_menu()
         return
     end
 
-    local filenames = marker.get_filenames()
+    local filenames = {}
+    for _, mark in pairs(marker.get_marks()) do
+        table.insert(filenames, mark.filename)
+    end
     vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
     vim.api.nvim_buf_set_lines(bufnr, 0, #filenames, false, filenames)
 
@@ -136,7 +140,7 @@ function M.toggle_quick_menu()
     local function open_current_file(command)
         return function()
             local filename = vim.api.nvim_get_current_line()
-            local mark = marker.get_mark_filename(filename)
+            local _, mark = marker.get_by_filename(filename)
             open(mark, command)
         end
     end

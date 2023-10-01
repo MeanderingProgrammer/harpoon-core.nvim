@@ -54,7 +54,7 @@ local function project()
     end
 end
 
-local function get_marks()
+function M.get_marks()
     if context.projects[project()] == nil then
         -- No need to save the initial empty value, so no file write
         context.projects[project()] = { marks = {} }
@@ -63,18 +63,28 @@ local function get_marks()
 end
 
 function M.length()
-    return #get_marks()
+    return #M.get_marks()
 end
 
-function M.get_filenames()
-    local filenames = {}
-    for _, mark in pairs(get_marks()) do
-        table.insert(filenames, mark.filename)
+function M.get_by_filename(filename)
+    for i, mark in pairs(M.get_marks()) do
+        if mark.filename == filename then
+            return i, mark
+        end
     end
-    return filenames
+    return nil, nil
 end
 
-local function relative_filename(filename)
+function M.get_by_index(index)
+    local marks = M.get_marks()
+    if #marks > 0 and index <= #marks then
+        return marks[index]
+    else
+        return nil
+    end
+end
+
+local function relative(filename)
     if filename == nil then
         filename = vim.api.nvim_buf_get_name(0)
     end
@@ -85,36 +95,9 @@ local function relative_filename(filename)
     end
 end
 
-function M.get_mark_filename(target_filename)
-    for _, mark in pairs(get_marks()) do
-        if mark.filename == target_filename then
-            return mark
-        end
-    end
-    return nil
-end
-
-function M.get_mark_index(index)
-    local marks = get_marks()
-    if #marks > 0 and index <= #marks then
-        return marks[index]
-    else
-        return nil
-    end
-end
-
-local function filename_index(target_filename)
-    for i, filename in pairs(M.get_filenames()) do
-        if filename == target_filename then
-            return i
-        end
-    end
-    return nil
-end
-
 local function save()
     local current_projects = read_projects(user_projects_file)
-    local new_marks = { marks = get_marks() }
+    local new_marks = { marks = M.get_marks() }
     ---@diagnostic disable-next-line: need-check-nil
     if not vim.deep_equal(current_projects[project()], new_marks) then
         current_projects[project()] = new_marks
@@ -126,9 +109,9 @@ end
 function M.set_project(filenames)
     local new_marks = {}
     for _, filename in pairs(filenames) do
-        filename = relative_filename(filename)
+        filename = relative(filename)
         if filename ~= nil then
-            local mark = M.get_mark_filename(filename)
+            local _, mark = M.get_by_filename(filename)
             if mark ~= nil then
                 table.insert(new_marks, mark)
             else
@@ -141,11 +124,10 @@ function M.set_project(filenames)
 end
 
 function M.add_file()
-    local filename = relative_filename(nil)
-    local index = filename_index(filename)
+    local filename = relative(nil)
+    local index, _ = M.get_by_filename(filename)
     if filename ~= nil and index == nil then
-        local marks = get_marks()
-        table.insert(marks, {
+        table.insert(M.get_marks(), {
             filename = filename,
             cursor = vim.api.nvim_win_get_cursor(0),
         })
@@ -154,18 +136,18 @@ function M.add_file()
 end
 
 function M.rm_file()
-    local filename = relative_filename(nil)
-    local index = filename_index(filename)
+    local filename = relative(nil)
+    local index = M.get_by_filename(filename)
     if filename ~= nil and index ~= nil then
-        local marks = get_marks()
-        table.remove(marks, index)
+        table.remove(M.get_marks(), index)
         save()
     end
 end
 
 function M.current_index()
-    local filename = relative_filename(nil)
-    return filename_index(filename)
+    local filename = relative(nil)
+    local index, _ = M.get_by_filename(filename)
+    return index
 end
 
 return M
