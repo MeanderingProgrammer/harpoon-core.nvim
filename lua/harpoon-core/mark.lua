@@ -85,13 +85,22 @@ local function relative_filename(filename)
     end
 end
 
-local function get_mark(target_filename)
+function M.get_mark_filename(target_filename)
     for _, mark in pairs(get_marks()) do
         if mark.filename == target_filename then
             return mark
         end
     end
     return nil
+end
+
+function M.get_mark_index(index)
+    local marks = get_marks()
+    if #marks > 0 and index <= #marks then
+        return marks[index]
+    else
+        return nil
+    end
 end
 
 local function filename_index(target_filename)
@@ -119,7 +128,7 @@ function M.set_project(filenames)
     for _, filename in pairs(filenames) do
         filename = relative_filename(filename)
         if filename ~= nil then
-            local mark = get_mark(filename)
+            local mark = M.get_mark_filename(filename)
             if mark ~= nil then
                 table.insert(new_marks, mark)
             else
@@ -157,15 +166,6 @@ end
 function M.current_index()
     local filename = relative_filename(nil)
     return filename_index(filename)
-end
-
-function M.get_filename(index)
-    local filenames = M.get_filenames()
-    if #filenames > 0 and index <= #filenames then
-        return filenames[index]
-    else
-        return nil
-    end
 end
 
 return M

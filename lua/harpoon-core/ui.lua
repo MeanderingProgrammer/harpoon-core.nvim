@@ -35,11 +35,11 @@ local function get_existing(filename)
     return nil
 end
 
-local function open(filename, command)
+local function open(mark, command)
     save_close()
     local existing_window_id = nil
     if harpoon.get_opts().use_existing then
-        existing_window_id = get_existing(filename)
+        existing_window_id = get_existing(mark.filename)
     end
     if existing_window_id ~= nil then
         vim.api.nvim_set_current_win(existing_window_id)
@@ -47,14 +47,17 @@ local function open(filename, command)
         if command ~= nil then
             vim.cmd(command)
         end
-        vim.cmd('e ' .. filename)
+        vim.cmd.edit(mark.filename)
+        if harpoon.get_opts().use_cursor and mark.cursor ~= nil then
+            vim.api.nvim_win_set_cursor(0, mark.cursor)
+        end
     end
 end
 
 function M.nav_file(index)
-    local filename = marker.get_filename(index)
-    if filename ~= nil then
-        open(filename, nil)
+    local mark = marker.get_mark_index(index)
+    if mark ~= nil then
+        open(mark, nil)
     end
 end
 
@@ -132,7 +135,9 @@ function M.toggle_quick_menu()
 
     local function open_current_file(command)
         return function()
-            open(vim.api.nvim_get_current_line(), command)
+            local filename = vim.api.nvim_get_current_line()
+            local mark = marker.get_mark_filename(filename)
+            open(mark, command)
         end
     end
     nmap('<cr>', open_current_file(nil))

@@ -62,6 +62,8 @@ are a couple of intentional differences in behavior:
             use_existing = true,
             -- Set marks specific to each git branch inside git repository
             mark_branch = false,
+            -- Use the previous cursor position of marked files when opened
+            use_cursor = true,
             -- Settings for popup window
             menu = {
                 width = 60,
