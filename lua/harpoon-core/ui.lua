@@ -1,5 +1,5 @@
 local harpoon = require('harpoon-core')
-local mark = require('harpoon-core.mark')
+local marker = require('harpoon-core.mark')
 local popup = require('plenary.popup')
 
 local M = {}
@@ -9,7 +9,7 @@ local window_id = nil
 local function save_project()
     if bufnr ~= nil then
         local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-        mark.set_project(filenames)
+        marker.set_project(filenames)
     end
 end
 
@@ -52,15 +52,15 @@ local function open(filename, command)
 end
 
 function M.nav_file(index)
-    local filename = mark.get_filename(index)
+    local filename = marker.get_filename(index)
     if filename ~= nil then
         open(filename, nil)
     end
 end
 
 function M.nav_next()
-    local current_index = mark.current_index()
-    if current_index == nil or current_index == mark.length() then
+    local current_index = marker.current_index()
+    if current_index == nil or current_index == marker.length() then
         M.nav_file(1)
     else
         M.nav_file(current_index + 1)
@@ -68,9 +68,9 @@ function M.nav_next()
 end
 
 function M.nav_prev()
-    local current_index = mark.current_index()
+    local current_index = marker.current_index()
     if current_index == nil or current_index == 1 then
-        M.nav_file(mark.length())
+        M.nav_file(marker.length())
     else
         M.nav_file(current_index - 1)
     end
@@ -106,14 +106,14 @@ function M.toggle_quick_menu()
 
     -- This must happen before we create the window, otherwise the current buffer
     -- ends up being the harpoon window
-    local current_index = mark.current_index()
+    local current_index = marker.current_index()
 
     create_window()
     if bufnr == nil or window_id == nil then
         return
     end
 
-    local filenames = mark.get_filenames()
+    local filenames = marker.get_filenames()
     vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
     vim.api.nvim_buf_set_lines(bufnr, 0, #filenames, false, filenames)
 
