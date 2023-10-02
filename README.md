@@ -25,6 +25,7 @@ of what is available publically is not straightforward.
 * Will set active window to specified file if it is already open rather than
   opening another window if `use_existing` option is set, works across tabs.
 * Supports storing and using last cursor position if `use_cursor` option is set.
+* A migration script to move existing harpoon marks over.
 
 # Limitations
 
@@ -43,7 +44,7 @@ are a couple of intentional differences in behavior:
 * As a consequence of the above empty lines are also not allowed. Though there may be
   some value in having your shortcuts remain consistent even when some file is removed
   this implementation avoids having placeholder slots that need special handling.
-* Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218)
+* Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218).
 
 # Install
 
@@ -77,6 +78,13 @@ are a couple of intentional differences in behavior:
     end,
 }
 ```
+
+# Migrate Harpoon Marks
+
+This can be done by executing the import_harpoon script: `python3 scripts/import_harpoon.py`
+
+This requires `python` to be installed but does not rely on any additional libraries.
+
 # Harpooning
 
 This section is a copy paste from the original, with some minor changes / additions.
