@@ -18,18 +18,18 @@ of what is available publically is not straightforward.
 
 # Features
 
-* Supports running multiple different projects at the same time without losing any
+- Supports running multiple different projects at the same time without losing any
   changes to your marked files.
-* Invalid marks get filtered out, only valid changes propagate to marks.
-* Marking files at a branch granularity if `mark_branch` option is set.
-* Will set active window to specified file if it is already open rather than
+- Invalid marks get filtered out, only valid changes propagate to marks.
+- Marking files at a branch granularity if `mark_branch` option is set.
+- Will set active window to specified file if it is already open rather than
   opening another window if `use_existing` option is set, works across tabs.
-* Supports storing and using last cursor position if `use_cursor` option is set.
-* A migration script to move existing harpoon marks over.
+- Supports storing and using last cursor position if `use_cursor` option is set.
+- A migration script to move existing harpoon marks over.
 
 # Limitations
 
-* Having the same project open in multiple instances of Neovim will cause changes to
+- Having the same project open in multiple instances of Neovim will cause changes to
   your marked files to get clobbered.
 
 # Differences from Original
@@ -37,14 +37,14 @@ of what is available publically is not straightforward.
 While many of the publically exposed behaviors have been copied to be nearly exact there
 are a couple of intentional differences in behavior:
 
-* Invalid files are never saved to your marks. When editing you can add whatever lines
+- Invalid files are never saved to your marks. When editing you can add whatever lines
   you want to the preview, but if it doesn't point to an actual file it'll be thrown
   out immediately and never persisted. This will also happen if you later delete a file
   after the first time you open the preview window.
-* As a consequence of the above empty lines are also not allowed. Though there may be
+- As a consequence of the above empty lines are also not allowed. Though there may be
   some value in having your shortcuts remain consistent even when some file is removed
   this implementation avoids having placeholder slots that need special handling.
-* Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218).
+- Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218).
 
 # Install
 
@@ -137,6 +137,6 @@ You can also cycle the list in both directions.
 
 From the quickmenu, open a file in:
 
-* Vertical split with `<ctrl-v>`
-* Horizontal split with `<ctrl-x>`
-* New tab with `<ctrl-t>`
+- Vertical split with `<ctrl-v>`
+- Horizontal split with `<ctrl-x>`
+- New tab with `<ctrl-t>`
