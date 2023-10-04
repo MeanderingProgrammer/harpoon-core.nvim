@@ -95,7 +95,7 @@ local function relative(filename)
     end
 end
 
-local function save()
+function M.save()
     local current_projects = read_projects(user_projects_file)
     local new_marks = { marks = M.get_marks() }
     ---@diagnostic disable-next-line: need-check-nil
@@ -120,27 +120,27 @@ function M.set_project(filenames)
         end
     end
     context.projects[project()] = { marks = new_marks }
-    save()
+    M.save()
 end
 
-function M.add_file()
-    local filename = relative(nil)
+function M.add_file(filename)
+    filename = relative(filename)
     local index, _ = M.get_by_filename(filename)
     if filename ~= nil and index == nil then
         table.insert(M.get_marks(), {
             filename = filename,
             cursor = vim.api.nvim_win_get_cursor(0),
         })
-        save()
+        M.save()
     end
 end
 
-function M.rm_file()
-    local filename = relative(nil)
+function M.rm_file(filename)
+    filename = relative(filename)
     local index = M.get_by_filename(filename)
     if filename ~= nil and index ~= nil then
         table.remove(M.get_marks(), index)
-        save()
+        M.save()
     end
 end
 
@@ -154,7 +154,7 @@ function M.update_cursor()
     local _, mark = M.get_by_filename(filename)
     if mark ~= nil then
         mark.cursor = vim.api.nvim_win_get_cursor(0)
-        save()
+        M.save()
     end
 end
 

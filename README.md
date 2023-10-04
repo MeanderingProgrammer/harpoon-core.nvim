@@ -140,3 +140,23 @@ From the quickmenu, open a file in:
 - Vertical split with `<ctrl-v>`
 - Horizontal split with `<ctrl-x>`
 - New tab with `<ctrl-t>`
+
+# Telescope Support
+
+First register harpoon as a telescope extension.
+
+```lua
+require('telescope').load_extension('harpoon-core')
+```
+
+Then open the marks page.
+
+```lua
+Telescope harpoon-core marks
+```
+
+Valid keymaps in Telescope are:
+
+- `<ctrl-d>` delete the current mark
+- `<ctrl-p>` move mark up one position
+- `<ctrl-n>` move mark down one position
