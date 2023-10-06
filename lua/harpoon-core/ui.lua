@@ -27,7 +27,9 @@ local function get_existing(filename)
     for _, tabpage in pairs(vim.api.nvim_list_tabpages()) do
         for _, tabpage_window_id in pairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
             local tabpage_bufnr = vim.api.nvim_win_get_buf(tabpage_window_id)
-            if vim.fn.bufname(tabpage_bufnr) == filename then
+            local tabpage_filename = vim.fn.bufname(tabpage_bufnr)
+            local tabpage_relative_filename = marker.relative(tabpage_filename)
+            if tabpage_relative_filename == filename then
                 return tabpage_window_id
             end
         end

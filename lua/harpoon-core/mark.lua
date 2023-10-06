@@ -84,7 +84,7 @@ function M.get_by_index(index)
     end
 end
 
-local function relative(filename)
+function M.relative(filename)
     if filename == nil then
         filename = vim.api.nvim_buf_get_name(0)
     end
@@ -109,7 +109,7 @@ end
 function M.set_project(filenames)
     local new_marks = {}
     for _, filename in pairs(filenames) do
-        filename = relative(filename)
+        filename = M.relative(filename)
         if filename ~= nil then
             local _, mark = M.get_by_filename(filename)
             if mark ~= nil then
@@ -124,7 +124,7 @@ function M.set_project(filenames)
 end
 
 function M.add_file(filename)
-    filename = relative(filename)
+    filename = M.relative(filename)
     local index, _ = M.get_by_filename(filename)
     if filename ~= nil and index == nil then
         table.insert(M.get_marks(), {
@@ -136,7 +136,7 @@ function M.add_file(filename)
 end
 
 function M.rm_file(filename)
-    filename = relative(filename)
+    filename = M.relative(filename)
     local index = M.get_by_filename(filename)
     if filename ~= nil and index ~= nil then
         table.remove(M.get_marks(), index)
@@ -145,12 +145,12 @@ function M.rm_file(filename)
 end
 
 function M.current()
-    local filename = relative(nil)
+    local filename = M.relative(nil)
     return M.get_by_filename(filename)
 end
 
 function M.update_cursor()
-    local filename = relative(nil)
+    local filename = M.relative(nil)
     local _, mark = M.get_by_filename(filename)
     if mark ~= nil then
         mark.cursor = vim.api.nvim_win_get_cursor(0)
