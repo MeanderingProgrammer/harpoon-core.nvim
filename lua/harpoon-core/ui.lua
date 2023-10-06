@@ -40,10 +40,16 @@ local function open(mark, command)
         return
     end
     save_close()
+
+    if command == nil then
+        command = harpoon.get_opts().default_action
+    end
+
     local existing_window_id = nil
     if harpoon.get_opts().use_existing then
         existing_window_id = get_existing(mark.filename)
     end
+
     if existing_window_id ~= nil then
         vim.api.nvim_set_current_win(existing_window_id)
     else

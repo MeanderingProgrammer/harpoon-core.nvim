@@ -25,6 +25,7 @@ of what is available publically is not straightforward.
 - Will set active window to specified file if it is already open rather than
   opening another window if `use_existing` option is set, works across tabs.
 - Supports storing and using last cursor position if `use_cursor` option is set.
+- Supports different default actions when opening a mark with `default_action` option.
 - A migration script to move existing harpoon marks over.
 
 # Limitations
@@ -60,6 +61,9 @@ are a couple of intentional differences in behavior:
         require('harpoon-core').setup({
             -- Make existing window active rather than creating a new window
             use_existing = true,
+            -- Default action when opening a mark, defaults to current window
+            -- Example: 'vs' will open in new vertical split, 'tabnew' will open in new tab
+            default_action = nil,
             -- Set marks specific to each git branch inside git repository
             mark_branch = false,
             -- Use the previous cursor position of marked files when opened

@@ -6,6 +6,9 @@ function M.setup(opts)
     local default_opts = {
         -- Make existing window active rather than creating a new window
         use_existing = true,
+        -- Default action when opening a mark, defaults to current window
+        -- Example: 'vs' will open in new vertical split, 'tabnew' will open in new tab
+        default_action = nil,
         -- Set marks specific to each git branch inside git repository
         mark_branch = false,
         -- Use the previous cursor position of marked files when opened
