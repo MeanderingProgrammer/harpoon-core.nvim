@@ -67,7 +67,7 @@ function M.length()
 end
 
 function M.get_by_filename(filename)
-    for i, mark in pairs(M.get_marks()) do
+    for i, mark in ipairs(M.get_marks()) do
         if mark.filename == filename then
             return i, mark
         end
@@ -108,7 +108,7 @@ end
 
 function M.set_project(filenames)
     local new_marks = {}
-    for _, filename in pairs(filenames) do
+    for _, filename in ipairs(filenames) do
         filename = M.relative(filename)
         if filename ~= nil then
             local _, mark = M.get_by_filename(filename)

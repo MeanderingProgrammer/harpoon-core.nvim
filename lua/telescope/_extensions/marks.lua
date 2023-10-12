@@ -7,7 +7,7 @@ local entry_display = require('telescope.pickers.entry_display')
 
 local function get_results()
     local result = {}
-    for i, mark in pairs(marker.get_marks()) do
+    for i, mark in ipairs(marker.get_marks()) do
         mark.index = i
         table.insert(result, mark)
     end

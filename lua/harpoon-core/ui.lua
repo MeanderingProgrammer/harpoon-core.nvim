@@ -24,8 +24,8 @@ end
 
 local function get_existing(filename)
     -- bufwinid is limited in scope to current tab, otherwise it would be perfect
-    for _, tabpage in pairs(vim.api.nvim_list_tabpages()) do
-        for _, tabpage_window_id in pairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+    for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+        for _, tabpage_window_id in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
             local tabpage_bufnr = vim.api.nvim_win_get_buf(tabpage_window_id)
             local tabpage_filename = vim.fn.bufname(tabpage_bufnr)
             local tabpage_relative_filename = marker.relative(tabpage_filename)
@@ -126,7 +126,7 @@ function M.toggle_quick_menu()
     end
 
     local filenames = {}
-    for _, mark in pairs(marker.get_marks()) do
+    for _, mark in ipairs(marker.get_marks()) do
         table.insert(filenames, mark.filename)
     end
     vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
