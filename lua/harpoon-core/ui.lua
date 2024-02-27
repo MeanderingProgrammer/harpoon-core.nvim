@@ -22,6 +22,7 @@ local function save_close()
     end
 end
 
+---@param filename string
 local function get_existing(filename)
     -- bufwinid is limited in scope to current tab, otherwise it would be perfect
     for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
@@ -37,6 +38,8 @@ local function get_existing(filename)
     return nil
 end
 
+---@param mark HarpoonMark?
+---@param command string?
 local function open(mark, command)
     if mark == nil then
         return
@@ -65,13 +68,14 @@ local function open(mark, command)
     end
 end
 
+---@param index integer
 function M.nav_file(index)
     local mark = marker.get_by_index(index)
     open(mark, nil)
 end
 
 function M.nav_next()
-    local index, _ = marker.current()
+    local index = marker.current()
     if index == nil or index == marker.length() then
         M.nav_file(1)
     else
@@ -80,7 +84,7 @@ function M.nav_next()
 end
 
 function M.nav_prev()
-    local index, _ = marker.current()
+    local index = marker.current()
     if index == nil or index == 1 then
         M.nav_file(marker.length())
     else
@@ -106,10 +110,6 @@ local function create_window()
     window_id = window.win_id
 end
 
-local function nmap(key, callback)
-    vim.keymap.set('n', key, callback, { buffer = bufnr, noremap = true, silent = true })
-end
-
 function M.toggle_quick_menu()
     if bufnr ~= nil or window_id ~= nil then
         save_close()
@@ -118,7 +118,7 @@ function M.toggle_quick_menu()
 
     -- This must happen before we create the window, otherwise the current buffer
     -- ends up being the harpoon window
-    local index, _ = marker.current()
+    local index = marker.current()
 
     create_window()
     if bufnr == nil or window_id == nil then
@@ -142,9 +142,11 @@ function M.toggle_quick_menu()
     vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
 
-    nmap('q', save_close)
-    nmap('<esc>', save_close)
+    local options = { buffer = bufnr, noremap = true, silent = true }
+    vim.keymap.set('n', 'q', save_close, options)
+    vim.keymap.set('n', '<esc>', save_close, options)
 
+    ---@param command string?
     local function open_current_file(command)
         return function()
             local filename = vim.api.nvim_get_current_line()
@@ -152,10 +154,10 @@ function M.toggle_quick_menu()
             open(mark, command)
         end
     end
-    nmap('<cr>', open_current_file(nil))
-    nmap('<C-v>', open_current_file('vs'))
-    nmap('<C-x>', open_current_file('sp'))
-    nmap('<C-t>', open_current_file('tabnew'))
+    vim.keymap.set('n', '<cr>', open_current_file(nil), options)
+    vim.keymap.set('n', '<C-v>', open_current_file('vs'), options)
+    vim.keymap.set('n', '<C-x>', open_current_file('sp'), options)
+    vim.keymap.set('n', '<C-t>', open_current_file('tabnew'), options)
 
     local function set_unmodified()
         vim.api.nvim_buf_set_option(bufnr, 'modified', false)

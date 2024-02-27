@@ -2,8 +2,10 @@ local git = require('harpoon-core.git')
 local path = require('plenary.path')
 local state = require('harpoon-core.state')
 
+-- Typically resolves to ~/.local/share/nvim/harpoon-core.json
+local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
+
 --[[
-Path typically resolves to ~/.local/share/nvim/harpoon-core.json
 Projects are stored in the following format:
 {
     "<absolute_path_to_project_root><-brance_name>": {
@@ -18,30 +20,47 @@ Projects are stored in the following format:
     ...
 }
 --]]
-local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
 
-local M = {}
-
+---@param file string
+---@return table
 local function read_json(file)
+    ---@diagnostic disable-next-line: return-type-mismatch
     return vim.json.decode(path:new(file):read())
 end
 
+---@param projects_file string
+---@return table
 local function read_projects(projects_file)
     local ok, projects = pcall(read_json, projects_file)
-    if not ok then
-        projects = {}
+    if ok then
+        return projects
+    else
+        return {}
     end
-    return projects
 end
 
+---@class HarpoonMark
+---@field filename string
+---@field cursor { [1]: integer, [2]: integer }
+---@field index integer?
+
+---@class Context
+---@field projects table<string, { marks: HarpoonMark[] }>
 local context = {
     projects = read_projects(user_projects_file),
 }
 
+---@return string
 local function root()
-    return vim.loop.cwd()
+    local result = vim.loop.cwd()
+    if result ~= nil then
+        return result
+    else
+        error('Could not determine project root')
+    end
 end
 
+---@return string
 local function project()
     local branch = nil
     if state.config.mark_branch then
@@ -54,18 +73,25 @@ local function project()
     end
 end
 
+local M = {}
+
+---@return HarpoonMark[]
 function M.get_marks()
-    if context.projects[project()] == nil then
+    local project_name = project()
+    if context.projects[project_name] == nil then
         -- No need to save the initial empty value, so no file write
-        context.projects[project()] = { marks = {} }
+        context.projects[project_name] = { marks = {} }
     end
-    return context.projects[project()].marks
+    return context.projects[project_name].marks
 end
 
+---@return integer
 function M.length()
     return #M.get_marks()
 end
 
+---@return integer?
+---@return HarpoonMark?
 function M.get_by_filename(filename)
     for i, mark in ipairs(M.get_marks()) do
         if mark.filename == filename then
@@ -75,6 +101,7 @@ function M.get_by_filename(filename)
     return nil, nil
 end
 
+---@return HarpoonMark?
 function M.get_by_index(index)
     local marks = M.get_marks()
     if #marks > 0 and index <= #marks then
@@ -84,6 +111,8 @@ function M.get_by_index(index)
     end
 end
 
+---@param filename string?
+---@return string?
 function M.relative(filename)
     if filename == nil then
         filename = vim.api.nvim_buf_get_name(0)
@@ -98,7 +127,6 @@ end
 function M.save()
     local current_projects = read_projects(user_projects_file)
     local new_marks = { marks = M.get_marks() }
-    ---@diagnostic disable-next-line: need-check-nil
     if not vim.deep_equal(current_projects[project()], new_marks) then
         current_projects[project()] = new_marks
         local projects_json = vim.fn.json_encode(current_projects)
@@ -106,16 +134,17 @@ function M.save()
     end
 end
 
+---@param filenames string[]
 function M.set_project(filenames)
     local new_marks = {}
     for _, filename in ipairs(filenames) do
-        filename = M.relative(filename)
-        if filename ~= nil then
-            local _, mark = M.get_by_filename(filename)
+        local relative_filename = M.relative(filename)
+        if relative_filename ~= nil then
+            local _, mark = M.get_by_filename(relative_filename)
             if mark ~= nil then
                 table.insert(new_marks, mark)
             else
-                table.insert(new_marks, { filename = filename })
+                table.insert(new_marks, { filename = relative_filename })
             end
         end
     end
@@ -123,6 +152,7 @@ function M.set_project(filenames)
     M.save()
 end
 
+---@param filename string?
 function M.add_file(filename)
     filename = M.relative(filename)
     local index, _ = M.get_by_filename(filename)
@@ -135,6 +165,7 @@ function M.add_file(filename)
     end
 end
 
+---@param filename string?
 function M.rm_file(filename)
     filename = M.relative(filename)
     local index = M.get_by_filename(filename)
@@ -144,6 +175,7 @@ function M.rm_file(filename)
     end
 end
 
+---@return integer?
 function M.current()
     local filename = M.relative(nil)
     return M.get_by_filename(filename)
