@@ -1,9 +1,27 @@
-local M = {}
-local context = {}
+local state = require('harpoon-core.state')
 
+local M = {}
+
+---@class UserMenuSettings
+---@field public width? integer
+---@field public height? integer
+
+---@class UserHighlightGroups
+---@field public window string
+---@field public border string
+
+---@class UserConfig
+---@field public use_existing? boolean
+---@field public default_action? string
+---@field public mark_branch? boolean
+---@field public use_cursor? boolean
+---@field public menu? UserMenuSettings
+---@field public highlight_groups? UserHighlightGroups
+
+---@param opts UserConfig|nil
 function M.setup(opts)
-    opts = opts or {}
-    local default_opts = {
+    ---@type Config
+    local default_config = {
         -- Make existing window active rather than creating a new window
         use_existing = true,
         -- Default action when opening a mark, defaults to current window
@@ -24,11 +42,7 @@ function M.setup(opts)
             border = 'HarpoonBorder',
         },
     }
-    context.opts = vim.tbl_deep_extend('force', default_opts, opts)
-end
-
-function M.get_opts()
-    return context.opts
+    state.config = vim.tbl_deep_extend('force', default_config, opts or {})
 end
 
 return M

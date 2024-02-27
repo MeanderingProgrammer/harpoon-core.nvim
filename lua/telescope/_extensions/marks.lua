@@ -1,9 +1,9 @@
-local marker = require('harpoon-core.mark')
 local action_state = require('telescope.actions.state')
+local marker = require('harpoon-core.mark')
 local conf = require('telescope.config').values
+local entry_display = require('telescope.pickers.entry_display')
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
-local entry_display = require('telescope.pickers.entry_display')
 
 local function get_results()
     local result = {}

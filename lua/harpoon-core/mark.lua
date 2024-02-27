@@ -1,6 +1,6 @@
-local harpoon = require('harpoon-core')
 local git = require('harpoon-core.git')
 local path = require('plenary.path')
+local state = require('harpoon-core.state')
 
 --[[
 Path typically resolves to ~/.local/share/nvim/harpoon-core.json
@@ -44,7 +44,7 @@ end
 
 local function project()
     local branch = nil
-    if harpoon.get_opts().mark_branch then
+    if state.config.mark_branch then
         branch = git.branch()
     end
     if branch == nil then

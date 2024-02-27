@@ -2,6 +2,7 @@ local job = require('plenary.job')
 
 local M = {}
 
+---@return string?
 function M.branch()
     local stderr = {}
     local stdout, result = job:new({

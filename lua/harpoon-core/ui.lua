@@ -1,6 +1,6 @@
-local harpoon = require('harpoon-core')
 local marker = require('harpoon-core.mark')
 local popup = require('plenary.popup')
+local state = require('harpoon-core.state')
 
 local M = {}
 local bufnr = nil
@@ -44,11 +44,11 @@ local function open(mark, command)
     save_close()
 
     if command == nil then
-        command = harpoon.get_opts().default_action
+        command = state.config.default_action
     end
 
     local existing_window_id = nil
-    if harpoon.get_opts().use_existing then
+    if state.config.use_existing then
         existing_window_id = get_existing(mark.filename)
     end
 
@@ -59,7 +59,7 @@ local function open(mark, command)
             vim.cmd(command)
         end
         vim.cmd.edit(mark.filename)
-        if harpoon.get_opts().use_cursor and mark.cursor ~= nil then
+        if state.config.use_cursor and mark.cursor ~= nil then
             vim.api.nvim_win_set_cursor(0, mark.cursor)
         end
     end
@@ -89,10 +89,10 @@ function M.nav_prev()
 end
 
 local function create_window()
-    local width = harpoon.get_opts().menu.width
-    local height = harpoon.get_opts().menu.height
+    local width = state.config.menu.width
+    local height = state.config.menu.height
     bufnr = vim.api.nvim_create_buf(false, false)
-    local hl_groups = harpoon.get_opts().highlight_groups
+    local hl_groups = state.config.highlight_groups
     local _, window = popup.create(bufnr, {
         title = 'Harpoon',
         highlight = hl_groups.window,
