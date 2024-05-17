@@ -52,12 +52,7 @@ local context = {
 
 ---@return string
 local function root()
-    local result = vim.loop.cwd()
-    if result ~= nil then
-        return result
-    else
-        error('Could not determine project root')
-    end
+    return vim.fn.getcwd()
 end
 
 ---@return string
