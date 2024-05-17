@@ -106,7 +106,7 @@ local function create_window()
         minheight = height,
         borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     })
-    vim.api.nvim_win_set_option(window.border.win_id, 'winhl', 'Normal:' .. hl_groups.border)
+    vim.api.nvim_set_option_value('winhl', 'Normal:' .. hl_groups.border, { win = window.border.win_id })
     window_id = window.win_id
 end
 
@@ -138,9 +138,9 @@ function M.toggle_quick_menu()
         vim.cmd('+' .. index - 1)
     end
 
-    vim.api.nvim_win_set_option(window_id, 'number', true)
-    vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'delete')
-    vim.api.nvim_buf_set_option(bufnr, 'buftype', 'acwrite')
+    vim.api.nvim_set_option_value('number', true, { win = window_id })
+    vim.api.nvim_set_option_value('bufhidden', 'delete', { buf = bufnr })
+    vim.api.nvim_set_option_value('buftype', 'acwrite', { buf = bufnr })
 
     local options = { buffer = bufnr, noremap = true, silent = true }
     vim.keymap.set('n', 'q', save_close, options)
@@ -160,7 +160,7 @@ function M.toggle_quick_menu()
     vim.keymap.set('n', '<C-t>', open_current_file('tabnew'), options)
 
     local function set_unmodified()
-        vim.api.nvim_buf_set_option(bufnr, 'modified', false)
+        vim.api.nvim_set_option_value('modified', false, { buf = bufnr })
     end
     vim.api.nvim_create_autocmd('BufModifiedSet', { buffer = bufnr, callback = set_unmodified })
     vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
