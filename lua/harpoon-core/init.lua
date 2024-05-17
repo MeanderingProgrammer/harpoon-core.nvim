@@ -2,25 +2,25 @@ local state = require('harpoon-core.state')
 
 local M = {}
 
----@class UserMenuSettings
+---@class harpoon.core.UserMenuSettings
 ---@field public width? integer
 ---@field public height? integer
 
----@class UserHighlightGroups
+---@class harpoon.core.UserHighlightGroups
 ---@field public window string
 ---@field public border string
 
----@class UserConfig
+---@class harpoon.core.UserConfig
 ---@field public use_existing? boolean
 ---@field public default_action? string
 ---@field public mark_branch? boolean
 ---@field public use_cursor? boolean
----@field public menu? UserMenuSettings
----@field public highlight_groups? UserHighlightGroups
+---@field public menu? harpoon.core.UserMenuSettings
+---@field public highlight_groups? harpoon.core.UserHighlightGroups
 
----@param opts UserConfig|nil
+---@param opts? harpoon.core.UserConfig
 function M.setup(opts)
-    ---@type Config
+    ---@type harpoon.core.Config
     local default_config = {
         -- Make existing window active rather than creating a new window
         use_existing = true,

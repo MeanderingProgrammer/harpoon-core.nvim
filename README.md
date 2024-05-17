@@ -30,57 +30,64 @@ of what is available publically is not straightforward.
 
 # Limitations
 
-- Having the same project open in multiple instances of Neovim will cause changes to
-  your marked files to get clobbered.
+- Having the same project open in multiple instances of Neovim will cause
+  changes to your marked files to get clobbered.
 
 # Differences from Original
 
-While many of the publically exposed behaviors have been copied to be nearly exact there
-are a couple of intentional differences in behavior:
+While many of the publically exposed behaviors have been copied to be nearly exact
+there are a couple of intentional differences in behavior:
 
-- Invalid files are never saved to your marks. When editing you can add whatever lines
-  you want to the preview, but if it doesn't point to an actual file it'll be thrown
-  out immediately and never persisted. This will also happen if you later delete a file
-  after the first time you open the preview window.
-- As a consequence of the above empty lines are also not allowed. Though there may be
-  some value in having your shortcuts remain consistent even when some file is removed
-  this implementation avoids having placeholder slots that need special handling.
+- Invalid files are never saved to your marks. When editing you can add whatever
+  lines you want to the preview, but if it doesn't point to an actual file it'll
+  be thrown out immediately and never persisted. This will also happen if you later
+  delete a file after the first time you open the preview window.
+- As a consequence of the above empty lines are also not allowed. Though there may
+  be some value in having your shortcuts remain consistent even when some file is
+  removed this implementation avoids having placeholder slots that need special handling.
 - Minor other changes and bug fixes such as [218](https://github.com/ThePrimeagen/harpoon/pull/218).
 
 # Install
 
-## Lazy.nvim
+## lazy.nvim
 
 ```lua
 {
     'MeanderingProgrammer/harpoon-core.nvim',
-    dependencies = {
-        'nvim-lua/plenary.nvim',
-    },
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
-        require('harpoon-core').setup({
-            -- Make existing window active rather than creating a new window
-            use_existing = true,
-            -- Default action when opening a mark, defaults to current window
-            -- Example: 'vs' will open in new vertical split, 'tabnew' will open in new tab
-            default_action = nil,
-            -- Set marks specific to each git branch inside git repository
-            mark_branch = false,
-            -- Use the previous cursor position of marked files when opened
-            use_cursor = true,
-            -- Settings for popup window
-            menu = {
-                width = 60,
-                height = 10,
-            },
-            -- Highlight groups to use for various components
-            highlight_groups = {
-                window = 'HarpoonWindow',
-                border = 'HarpoonBorder',
-            },
-        })
+        require('harpoon-core').setup({})
     end,
 }
+```
+
+# Setup
+
+Below is the configuration that gets used by default, any part of it can be modified
+by the user.
+
+```lua
+require('harpoon-core').setup({
+    -- Make existing window active rather than creating a new window
+    use_existing = true,
+    -- Default action when opening a mark, defaults to current window
+    -- Example: 'vs' will open in new vertical split, 'tabnew' will open in new tab
+    default_action = nil,
+    -- Set marks specific to each git branch inside git repository
+    mark_branch = false,
+    -- Use the previous cursor position of marked files when opened
+    use_cursor = true,
+    -- Settings for popup window
+    menu = {
+        width = 60,
+        height = 10,
+    },
+    -- Highlight groups to use for various components
+    highlight_groups = {
+        window = 'HarpoonWindow',
+        border = 'HarpoonBorder',
+    },
+})
 ```
 
 # Migrate Harpoon Marks
@@ -124,9 +131,11 @@ View all project marks.
 :lua require('harpoon-core.ui').toggle_quick_menu()
 ```
 
-You can go up and down the list, enter, delete or reorder. `q` and `<esc>` exit and save the menu.
+You can go up and down the list, enter, delete or reorder. `q` and `<esc>` exit
+and save the menu.
 
-You can also switch to any mark without bringing up the menu. Below example uses 3 as the target file.
+You can also switch to any mark without bringing up the menu. Below example uses
+3 as the target file.
 
 ```lua
 :lua require('harpoon-core.ui').nav_file(3)

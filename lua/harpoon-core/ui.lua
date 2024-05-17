@@ -38,7 +38,7 @@ local function get_existing(filename)
     return nil
 end
 
----@param mark HarpoonMark?
+---@param mark harpoon.core.Mark?
 ---@param command string?
 local function open(mark, command)
     if mark == nil then

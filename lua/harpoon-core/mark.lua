@@ -39,13 +39,13 @@ local function read_projects(projects_file)
     end
 end
 
----@class HarpoonMark
+---@class harpoon.core.Mark
 ---@field filename string
 ---@field cursor { [1]: integer, [2]: integer }
 ---@field index integer?
 
----@class Context
----@field projects table<string, { marks: HarpoonMark[] }>
+---@class harpoon.core.Context
+---@field projects table<string, { marks: harpoon.core.Mark[] }>
 local context = {
     projects = read_projects(user_projects_file),
 }
@@ -70,7 +70,7 @@ end
 
 local M = {}
 
----@return HarpoonMark[]
+---@return harpoon.core.Mark[]
 function M.get_marks()
     local project_name = project()
     if context.projects[project_name] == nil then
@@ -86,7 +86,7 @@ function M.length()
 end
 
 ---@return integer?
----@return HarpoonMark?
+---@return harpoon.core.Mark?
 function M.get_by_filename(filename)
     for i, mark in ipairs(M.get_marks()) do
         if mark.filename == filename then
@@ -96,7 +96,7 @@ function M.get_by_filename(filename)
     return nil, nil
 end
 
----@return HarpoonMark?
+---@return harpoon.core.Mark?
 function M.get_by_index(index)
     local marks = M.get_marks()
     if #marks > 0 and index <= #marks then
