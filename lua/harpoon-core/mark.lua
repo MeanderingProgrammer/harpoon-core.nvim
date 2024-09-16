@@ -1,92 +1,77 @@
-local git = require('harpoon-core.git')
-local path = require('plenary.path')
-local state = require('harpoon-core.state')
-
--- Typically resolves to ~/.local/share/nvim/harpoon-core.json
-local user_projects_file = vim.fn.stdpath('data') .. '/harpoon-core.json'
+local file = require('harpoon-core.file')
 
 --[[
 Projects are stored in the following format:
 {
-    "<absolute_path_to_project_root><-brance_name>": {
-        "marks": [
-            {
-                "filename": "<marked_file_relative_path_from_project_root>",
-                "cursor": [ <row>, <column> ],
-            },
-            ...
-        ]
-    },
-    ...
+  "<absolute_path_to_project_root><-brance_name>": {
+    "marks": [
+      {
+        "filename": "<marked_file_relative_path_from_project_root>",
+        "cursor": [ <row>, <column> ],
+      },
+      ...
+    ]
+  },
+  ...
 }
 --]]
-
----@param file string
----@return table
-local function read_json(file)
-    ---@diagnostic disable-next-line: return-type-mismatch
-    return vim.json.decode(path:new(file):read())
-end
-
----@param projects_file string
----@return table
-local function read_projects(projects_file)
-    local ok, projects = pcall(read_json, projects_file)
-    if ok then
-        return projects
-    else
-        return {}
-    end
-end
 
 ---@class harpoon.core.Mark
 ---@field filename string
 ---@field cursor { [1]: integer, [2]: integer }
----@field index integer?
+---@field index? integer
 
----@class harpoon.core.Context
----@field projects table<string, { marks: harpoon.core.Mark[] }>
-local context = {
-    projects = read_projects(user_projects_file),
-}
-
----@return string
-local function root()
-    return vim.fn.getcwd()
-end
-
----@return string
-local function project()
-    local branch = nil
-    if state.config.mark_branch then
-        branch = git.branch()
-    end
-    if branch == nil then
-        return root()
-    else
-        return root() .. '-' .. branch
-    end
-end
-
+---@class harpoon.core.Marker
+---@field private mark_branch boolean
+---@field private file_path string
+---@field private projects table<string, { marks: harpoon.core.Mark[] }>
 local M = {}
+
+---@param config harpoon.core.Config
+function M.setup(config)
+    M.mark_branch = config.mark_branch
+    -- Typically resolves to ~/.local/share/nvim/harpoon-core.json
+    M.file_path = vim.fn.stdpath('data') .. '/harpoon-core.json'
+    M.projects = M.read_projects()
+end
+
+---@private
+---@return table<string, { marks: harpoon.core.Mark[] }>
+function M.read_projects()
+    local ok, projects = pcall(function()
+        local content = file.read(M.file_path)
+        return vim.json.decode(content)
+    end)
+    return ok and projects or {}
+end
 
 ---@return harpoon.core.Mark[]
 function M.get_marks()
-    local project_name = project()
-    if context.projects[project_name] == nil then
+    local project = M.project()
+    if M.projects[project] == nil then
         -- No need to save the initial empty value, so no file write
-        context.projects[project_name] = { marks = {} }
+        M.projects[project] = { marks = {} }
     end
-    return context.projects[project_name].marks
+    return M.projects[project].marks
 end
 
----@return integer
-function M.length()
-    return #M.get_marks()
+---@private
+---@return string
+function M.root()
+    return vim.fn.getcwd()
 end
 
----@return integer?
----@return harpoon.core.Mark?
+---@private
+---@return string
+function M.project()
+    local branch = nil
+    if M.mark_branch then
+        branch = vim.trim(vim.fn.system({ 'git', 'branch', '--show-current' }))
+    end
+    return M.root() .. (branch == nil and '' or '-' .. branch)
+end
+
+---@return integer?, harpoon.core.Mark?
 function M.get_by_filename(filename)
     for i, mark in ipairs(M.get_marks()) do
         if mark.filename == filename then
@@ -96,58 +81,50 @@ function M.get_by_filename(filename)
     return nil, nil
 end
 
----@return harpoon.core.Mark?
-function M.get_by_index(index)
-    local marks = M.get_marks()
-    if #marks > 0 and index <= #marks then
-        return marks[index]
-    else
-        return nil
-    end
-end
-
----@param filename string?
+---@param filename? string
 ---@return string?
 function M.relative(filename)
     if filename == nil then
         filename = vim.api.nvim_buf_get_name(0)
     end
-    if vim.fn.filereadable(filename) == 1 then
-        return path:new(filename):make_relative(root())
-    else
+    if vim.fn.filereadable(filename) == 0 then
         return nil
+    end
+    local root = M.root()
+    if filename:sub(1, #root) == root then
+        -- Ignore file separator after root
+        return filename:sub(#root + 2)
+    else
+        return filename
     end
 end
 
 function M.save()
-    local current_projects = read_projects(user_projects_file)
+    local project, projects = M.project(), M.read_projects()
     local new_marks = { marks = M.get_marks() }
-    if not vim.deep_equal(current_projects[project()], new_marks) then
-        current_projects[project()] = new_marks
-        local projects_json = vim.fn.json_encode(current_projects)
-        path:new(user_projects_file):write(projects_json, 'w')
+    if not vim.deep_equal(projects[project], new_marks) then
+        projects[project] = new_marks
+        local serialized = vim.fn.json_encode(projects)
+        file.write(M.file_path, serialized)
     end
 end
 
 ---@param filenames string[]
 function M.set_project(filenames)
-    local new_marks = {}
-    for _, filename in ipairs(filenames) do
-        local relative_filename = M.relative(filename)
-        if relative_filename ~= nil then
-            local _, mark = M.get_by_filename(relative_filename)
-            if mark ~= nil then
-                table.insert(new_marks, mark)
-            else
-                table.insert(new_marks, { filename = relative_filename })
-            end
+    local marks = {}
+    for _, full_filename in ipairs(filenames) do
+        local filename = M.relative(full_filename)
+        if filename ~= nil then
+            local _, mark = M.get_by_filename(filename)
+            mark = mark ~= nil and mark or { filename = filename }
+            table.insert(marks, mark)
         end
     end
-    context.projects[project()] = { marks = new_marks }
+    M.projects[M.project()] = { marks = marks }
     M.save()
 end
 
----@param filename string?
+---@param filename? string
 function M.add_file(filename)
     filename = M.relative(filename)
     local index, _ = M.get_by_filename(filename)
@@ -160,7 +137,7 @@ function M.add_file(filename)
     end
 end
 
----@param filename string?
+---@param filename? string
 function M.rm_file(filename)
     filename = M.relative(filename)
     local index = M.get_by_filename(filename)

@@ -1,82 +1,29 @@
 local marker = require('harpoon-core.mark')
-local popup = require('plenary.popup')
-local state = require('harpoon-core.state')
 
+---@class harpoon.core.Ui
+---@field private use_existing boolean
+---@field private default_action? string
+---@field private use_cursor boolean
+---@field private width integer
+---@field private height integer
+---@field private buf? integer
+---@field private win? integer
 local M = {}
-local bufnr = nil
-local window_id = nil
 
-local function save_project()
-    if bufnr ~= nil then
-        local filenames = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-        marker.set_project(filenames)
-    end
-end
-
-local function save_close()
-    if window_id ~= nil then
-        save_project()
-        vim.api.nvim_win_close(window_id, true)
-        bufnr = nil
-        window_id = nil
-    end
-end
-
----@param filename string
-local function get_existing(filename)
-    -- bufwinid is limited in scope to current tab, otherwise it would be perfect
-    for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
-        for _, tabpage_window_id in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
-            local tabpage_bufnr = vim.api.nvim_win_get_buf(tabpage_window_id)
-            local tabpage_filename = vim.fn.bufname(tabpage_bufnr)
-            local tabpage_relative_filename = marker.relative(tabpage_filename)
-            if tabpage_relative_filename == filename then
-                return tabpage_window_id
-            end
-        end
-    end
-    return nil
-end
-
----@param mark harpoon.core.Mark?
----@param command string?
-local function open(mark, command)
-    if mark == nil then
-        return
-    end
-    save_close()
-
-    if command == nil then
-        command = state.config.default_action
-    end
-
-    local existing_window_id = nil
-    if state.config.use_existing then
-        existing_window_id = get_existing(mark.filename)
-    end
-
-    if existing_window_id ~= nil then
-        vim.api.nvim_set_current_win(existing_window_id)
-    else
-        if command ~= nil then
-            vim.cmd(command)
-        end
-        vim.cmd.edit(mark.filename)
-        if state.config.use_cursor and mark.cursor ~= nil then
-            vim.api.nvim_win_set_cursor(0, mark.cursor)
-        end
-    end
-end
-
----@param index integer
-function M.nav_file(index)
-    local mark = marker.get_by_index(index)
-    open(mark, nil)
+---@param config harpoon.core.Config
+function M.setup(config)
+    M.use_existing = config.use_existing
+    M.default_action = config.default_action
+    M.use_cursor = config.use_cursor
+    M.width = config.menu.width
+    M.height = config.menu.height
+    M.buf = nil
+    M.win = nil
 end
 
 function M.nav_next()
-    local index = marker.current()
-    if index == nil or index == marker.length() then
+    local marks, index = marker.get_marks(), marker.current()
+    if index == nil or index == #marks then
         M.nav_file(1)
     else
         M.nav_file(index + 1)
@@ -84,35 +31,25 @@ function M.nav_next()
 end
 
 function M.nav_prev()
-    local index = marker.current()
+    local marks, index = marker.get_marks(), marker.current()
     if index == nil or index == 1 then
-        M.nav_file(marker.length())
+        M.nav_file(#marks)
     else
         M.nav_file(index - 1)
     end
 end
 
-local function create_window()
-    local width = state.config.menu.width
-    local height = state.config.menu.height
-    bufnr = vim.api.nvim_create_buf(false, false)
-    local hl_groups = state.config.highlight_groups
-    local _, window = popup.create(bufnr, {
-        title = 'Harpoon',
-        highlight = hl_groups.window,
-        col = math.floor((vim.o.columns - width) / 2),
-        minwidth = width,
-        line = math.floor((vim.o.lines - height) / 2),
-        minheight = height,
-        borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
-    })
-    vim.api.nvim_set_option_value('winhl', 'Normal:' .. hl_groups.border, { win = window.border.win_id })
-    window_id = window.win_id
+---@param index integer
+function M.nav_file(index)
+    local marks = marker.get_marks()
+    if #marks > 0 and index <= #marks then
+        M.open(marks[index], nil)
+    end
 end
 
 function M.toggle_quick_menu()
-    if bufnr ~= nil or window_id ~= nil then
-        save_close()
+    if M.buf ~= nil or M.win ~= nil then
+        M.save_close()
         return
     end
 
@@ -120,17 +57,28 @@ function M.toggle_quick_menu()
     -- ends up being the harpoon window
     local index = marker.current()
 
-    create_window()
-    if bufnr == nil or window_id == nil then
-        return
-    end
-
     local filenames = {}
     for _, mark in ipairs(marker.get_marks()) do
         table.insert(filenames, mark.filename)
     end
-    vim.api.nvim_buf_set_name(bufnr, 'harpoon-menu')
-    vim.api.nvim_buf_set_lines(bufnr, 0, #filenames, false, filenames)
+
+    M.buf = vim.api.nvim_create_buf(false, false)
+    M.win = vim.api.nvim_open_win(M.buf, true, {
+        title = ' Harpoon ',
+        title_pos = 'center',
+        border = 'rounded',
+        relative = 'editor',
+        height = M.height,
+        width = M.width,
+        row = math.floor((vim.o.lines - M.height) / 2),
+        col = math.floor((vim.o.columns - M.width) / 2),
+    })
+    if M.buf == nil or M.win == nil then
+        return
+    end
+
+    vim.api.nvim_buf_set_name(M.buf, 'harpoon-menu')
+    vim.api.nvim_buf_set_lines(M.buf, 0, #filenames, false, filenames)
 
     -- Move cursor to current file if it exists, cursor is already on first
     -- line so movement needs to be offset by 1
@@ -138,33 +86,112 @@ function M.toggle_quick_menu()
         vim.cmd('+' .. index - 1)
     end
 
-    vim.api.nvim_set_option_value('number', true, { win = window_id })
-    vim.api.nvim_set_option_value('bufhidden', 'delete', { buf = bufnr })
-    vim.api.nvim_set_option_value('buftype', 'acwrite', { buf = bufnr })
+    vim.api.nvim_set_option_value('bufhidden', 'delete', { buf = M.buf })
+    vim.api.nvim_set_option_value('buftype', 'acwrite', { buf = M.buf })
 
-    local options = { buffer = bufnr, noremap = true, silent = true }
-    vim.keymap.set('n', 'q', save_close, options)
-    vim.keymap.set('n', '<esc>', save_close, options)
+    M.buf_map('q', 'save', nil)
+    M.buf_map('<esc>', 'save', nil)
+    M.buf_map('<cr>', 'open', nil)
+    M.buf_map('<C-v>', 'open', 'vs')
+    M.buf_map('<C-x>', 'open', 'sp')
+    M.buf_map('<C-t>', 'open', 'tabnew')
 
-    ---@param command string?
-    local function open_current_file(command)
-        return function()
+    vim.api.nvim_create_autocmd('BufModifiedSet', {
+        buffer = M.buf,
+        callback = function()
+            vim.api.nvim_set_option_value('modified', false, { buf = M.buf })
+        end,
+    })
+    vim.api.nvim_create_autocmd('BufWriteCmd', {
+        buffer = M.buf,
+        callback = M.save_project,
+    })
+    vim.api.nvim_create_autocmd('BufLeave', {
+        buffer = M.buf,
+        nested = true,
+        callback = M.save_close,
+    })
+end
+
+---@param lhs string
+---@param variant 'save'|'open'
+---@param command? string
+function M.buf_map(lhs, variant, command)
+    vim.keymap.set('n', lhs, function()
+        if variant == 'save' then
+            M.save_close()
+        elseif variant == 'open' then
             local filename = vim.api.nvim_get_current_line()
             local _, mark = marker.get_by_filename(filename)
-            open(mark, command)
+            M.open(mark, command)
+        end
+    end, { buffer = M.buf, noremap = true, silent = true })
+end
+
+---@private
+---@param mark? harpoon.core.Mark
+---@param command? string
+function M.open(mark, command)
+    if mark == nil then
+        return
+    end
+    M.save_close()
+
+    if command == nil then
+        command = M.default_action
+    end
+
+    local existing_win = nil
+    if M.use_existing then
+        existing_win = M.get_existing(mark.filename)
+    end
+
+    if existing_win ~= nil then
+        vim.api.nvim_set_current_win(existing_win)
+    else
+        if command ~= nil then
+            vim.cmd(command)
+        end
+        vim.cmd.edit(mark.filename)
+        if M.use_cursor and mark.cursor ~= nil then
+            vim.api.nvim_win_set_cursor(0, mark.cursor)
         end
     end
-    vim.keymap.set('n', '<cr>', open_current_file(nil), options)
-    vim.keymap.set('n', '<C-v>', open_current_file('vs'), options)
-    vim.keymap.set('n', '<C-x>', open_current_file('sp'), options)
-    vim.keymap.set('n', '<C-t>', open_current_file('tabnew'), options)
+end
 
-    local function set_unmodified()
-        vim.api.nvim_set_option_value('modified', false, { buf = bufnr })
+---@private
+function M.save_close()
+    if M.win ~= nil then
+        M.save_project()
+        vim.api.nvim_win_close(M.win, true)
+        M.buf = nil
+        M.win = nil
     end
-    vim.api.nvim_create_autocmd('BufModifiedSet', { buffer = bufnr, callback = set_unmodified })
-    vim.api.nvim_create_autocmd('BufWriteCmd', { buffer = bufnr, callback = save_project })
-    vim.api.nvim_create_autocmd('BufLeave', { buffer = bufnr, nested = true, callback = save_close })
+end
+
+---@private
+function M.save_project()
+    if M.buf ~= nil then
+        local filenames = vim.api.nvim_buf_get_lines(M.buf, 0, -1, true)
+        marker.set_project(filenames)
+    end
+end
+
+---@private
+---@param filename string
+function M.get_existing(filename)
+    -- bufwinid is limited in scope to current tab, otherwise it would be perfect
+    for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+        for _, tabpage_win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+            local tabpage_buf = vim.api.nvim_win_get_buf(tabpage_win)
+            local tabpage_filename = vim.fn.bufname(tabpage_buf)
+            local tabpage_relative_filename = marker.relative(tabpage_filename)
+            if tabpage_relative_filename == filename then
+                return tabpage_win
+            end
+        end
+    end
+    return nil
 end
 
 return M

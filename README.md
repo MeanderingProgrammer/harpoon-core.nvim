@@ -54,7 +54,6 @@ there are a couple of intentional differences in behavior:
 ```lua
 {
     'MeanderingProgrammer/harpoon-core.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('harpoon-core').setup({})
     end,
@@ -78,15 +77,7 @@ require('harpoon-core').setup({
     -- Use the previous cursor position of marked files when opened
     use_cursor = true,
     -- Settings for popup window
-    menu = {
-        width = 60,
-        height = 10,
-    },
-    -- Highlight groups to use for various components
-    highlight_groups = {
-        window = 'HarpoonWindow',
-        border = 'HarpoonBorder',
-    },
+    menu = { width = 60, height = 10 },
 })
 ```
 

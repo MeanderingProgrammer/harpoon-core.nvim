@@ -5,18 +5,57 @@ local entry_display = require('telescope.pickers.entry_display')
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 
-local function get_results()
-    local result = {}
-    for i, mark in ipairs(marker.get_marks()) do
-        mark.index = i
-        table.insert(result, mark)
+---@class harpoon.core.telescope.Extension
+local M = {}
+
+---@private
+---@param buf integer
+function M.delete(buf)
+    local confirmation = vim.fn.input(string.format('Delete current mark? [y/n]: '))
+    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
+        print(string.format('Did not delete mark'))
+        return
     end
-    return result
+    local entry = action_state.get_selected_entry()
+    marker.rm_file(entry.filename)
+    M.refresh_picker(buf)
 end
 
-local function generate_finder()
+---@private
+---@param buf integer
+function M.move_up(buf)
+    local marks, index = marker.get_marks(), action_state.get_selected_entry().index
+    if index ~= #marks then
+        local mark = table.remove(marks, index)
+        table.insert(marks, index + 1, mark)
+        marker.save()
+        M.refresh_picker(buf)
+    end
+end
+
+---@private
+---@param buf integer
+function M.move_down(buf)
+    local marks, index = marker.get_marks(), action_state.get_selected_entry().index
+    if index ~= 1 then
+        local mark = table.remove(marks, index)
+        table.insert(marks, index - 1, mark)
+        marker.save()
+        M.refresh_picker(buf)
+    end
+end
+
+---@private
+---@param buf integer
+function M.refresh_picker(buf)
+    local picker = action_state.get_current_picker(buf)
+    picker:refresh(M.generate_finder(), { reset_prompt = true })
+end
+
+---@private
+function M.generate_finder()
     return finders.new_table({
-        results = get_results(),
+        results = M.get_results(),
         entry_maker = function(entry)
             local displayer = entry_display.create({
                 separator = ' - ',
@@ -44,44 +83,15 @@ local function generate_finder()
     })
 end
 
-local function reset_picker(prompt_bufnr)
-    local current_picker = action_state.get_current_picker(prompt_bufnr)
-    current_picker:refresh(generate_finder(), { reset_prompt = true })
-end
-
-local function delete(prompt_bufnr)
-    local confirmation = vim.fn.input(string.format('Delete current mark? [y/n]: '))
-    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
-        print(string.format('Did not delete mark'))
-        return
+---@private
+---@return harpoon.core.Mark[]
+function M.get_results()
+    local result = {}
+    for i, mark in ipairs(marker.get_marks()) do
+        mark.index = i
+        table.insert(result, mark)
     end
-    local entry = action_state.get_selected_entry()
-    marker.rm_file(entry.filename)
-    reset_picker(prompt_bufnr)
-end
-
-local function move_up(prompt_bufnr)
-    local index = action_state.get_selected_entry().index
-    if index == marker.length() then
-        return
-    end
-    local marks = marker.get_marks()
-    local mark = table.remove(marks, index)
-    table.insert(marks, index + 1, mark)
-    marker.save()
-    reset_picker(prompt_bufnr)
-end
-
-local function move_down(prompt_bufnr)
-    local index = action_state.get_selected_entry().index
-    if index == 1 then
-        return
-    end
-    local marks = marker.get_marks()
-    local mark = table.remove(marks, index)
-    table.insert(marks, index - 1, mark)
-    marker.save()
-    reset_picker(prompt_bufnr)
+    return result
 end
 
 return function(opts)
@@ -89,16 +99,16 @@ return function(opts)
     pickers
         .new(opts, {
             prompt_title = 'Harpoon',
-            finder = generate_finder(),
+            finder = M.generate_finder(),
             sorter = conf.generic_sorter(opts),
             previewer = conf.grep_previewer(opts),
             attach_mappings = function(_, map)
-                map('i', '<c-d>', delete)
-                map('n', '<c-d>', delete)
-                map('i', '<c-p>', move_up)
-                map('n', '<c-p>', move_up)
-                map('i', '<c-n>', move_down)
-                map('n', '<c-n>', move_down)
+                map('i', '<c-d>', M.delete)
+                map('n', '<c-d>', M.delete)
+                map('i', '<c-p>', M.move_up)
+                map('n', '<c-p>', M.move_up)
+                map('i', '<c-n>', M.move_down)
+                map('n', '<c-n>', M.move_down)
                 return true
             end,
         })
