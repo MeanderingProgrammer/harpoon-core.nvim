@@ -4,6 +4,7 @@ local conf = require('telescope.config').values
 local entry_display = require('telescope.pickers.entry_display')
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
+local state = require('harpoon-core.state')
 
 ---@class harpoon.core.telescope.Extension
 local M = {}
@@ -11,10 +12,12 @@ local M = {}
 ---@private
 ---@param buf integer
 function M.delete(buf)
-    local confirmation = vim.fn.input(string.format('Delete current mark? [y/n]: '))
-    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
-        print(string.format('Did not delete mark'))
-        return
+    if state.config.delete_confirmation then
+        local confirmation = vim.fn.input(string.format('Delete current mark? [y/n]: '))
+        if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
+            print(string.format('Did not delete mark'))
+            return
+        end
     end
     local entry = action_state.get_selected_entry()
     marker.rm_file(entry.filename)
