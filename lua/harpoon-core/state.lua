@@ -8,6 +8,7 @@
 ---@field public mark_branch boolean
 ---@field public use_cursor boolean
 ---@field public menu harpoon.core.MenuSettings
+---@field public delete_confirmation boolean
 
 ---@class harpoon.core.State
 ---@field config harpoon.core.Config

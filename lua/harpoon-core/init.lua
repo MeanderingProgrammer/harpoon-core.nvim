@@ -11,6 +11,7 @@ local M = {}
 ---@field public mark_branch? boolean
 ---@field public use_cursor? boolean
 ---@field public menu? harpoon.core.UserMenuSettings
+---@field public delete_confirmation? boolean
 
 ---@private
 ---@type harpoon.core.Config
@@ -26,6 +27,8 @@ M.default_config = {
     use_cursor = true,
     -- Settings for popup window
     menu = { width = 60, height = 10 },
+    -- controls confirmation when deleting mark in telescope
+    delete_confirmation = true,
 }
 
 ---@param opts? harpoon.core.UserConfig
