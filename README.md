@@ -78,7 +78,7 @@ require('harpoon-core').setup({
     use_cursor = true,
     -- Settings for popup window
     menu = { width = 60, height = 10 },
-    -- controls confirmation when deleting mark in telescope
+    -- Controls confirmation when deleting mark in telescope
     delete_confirmation = true,
 })
 ```

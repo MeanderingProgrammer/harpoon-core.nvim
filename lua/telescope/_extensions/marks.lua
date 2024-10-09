@@ -12,16 +12,23 @@ local M = {}
 ---@private
 ---@param buf integer
 function M.delete(buf)
-    if state.config.delete_confirmation then
-        local confirmation = vim.fn.input(string.format('Delete current mark? [y/n]: '))
-        if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
-            print(string.format('Did not delete mark'))
-            return
-        end
+    if not M.confirm_delete() then
+        print('Did not delete mark')
+        return
     end
     local entry = action_state.get_selected_entry()
     marker.rm_file(entry.filename)
     M.refresh_picker(buf)
+end
+
+---@private
+---@return boolean
+function M.confirm_delete()
+    if not state.config.delete_confirmation then
+        return true
+    end
+    local response = vim.fn.input('Delete current mark? [y/n]: ')
+    return string.len(response) > 0 and string.sub(string.lower(response), 0, 1) == 'y'
 end
 
 ---@private
