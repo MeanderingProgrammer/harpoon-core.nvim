@@ -113,6 +113,7 @@ function M.toggle_quick_menu()
     })
 end
 
+---@private
 ---@param lhs string
 ---@param variant 'save'|'open'
 ---@param command? string
@@ -137,25 +138,27 @@ function M.open(mark, command)
     end
     M.save_close()
 
-    if command == nil then
-        command = M.default_action
+    local windows = M.get_existing(mark)
+
+    -- Don't do anything if the mark is the current window
+    if vim.tbl_contains(windows, vim.api.nvim_get_current_win()) then
+        return
     end
 
-    local existing_win = nil
-    if M.use_existing then
-        existing_win = M.get_existing(mark.filename)
+    -- Set first window found as current if use_existing is set
+    if M.use_existing and #windows > 0 then
+        vim.api.nvim_set_current_win(windows[1])
+        return
     end
 
-    if existing_win ~= nil then
-        vim.api.nvim_set_current_win(existing_win)
-    else
-        if command ~= nil then
-            vim.cmd(command)
-        end
-        vim.cmd.edit(mark.filename)
-        if M.use_cursor and mark.cursor ~= nil then
-            vim.api.nvim_win_set_cursor(0, mark.cursor)
-        end
+    command = command or M.default_action
+    if command ~= nil then
+        vim.cmd(command)
+    end
+
+    vim.cmd.edit(mark.filename)
+    if M.use_cursor and mark.cursor ~= nil then
+        vim.api.nvim_win_set_cursor(0, mark.cursor)
     end
 end
 
@@ -178,20 +181,21 @@ function M.save_project()
 end
 
 ---@private
----@param filename string
-function M.get_existing(filename)
+---@param mark harpoon.core.Mark
+---@return integer[]
+function M.get_existing(mark)
     -- bufwinid is limited in scope to current tab, otherwise it would be perfect
-    for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
-        for _, tabpage_win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
-            local tabpage_buf = vim.api.nvim_win_get_buf(tabpage_win)
-            local tabpage_filename = vim.fn.bufname(tabpage_buf)
-            local tabpage_relative_filename = marker.relative(tabpage_filename)
-            if tabpage_relative_filename == filename then
-                return tabpage_win
+    local result = {}
+    for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            local filename = vim.fn.bufname(buf)
+            if marker.relative(filename) == mark.filename then
+                table.insert(result, win)
             end
         end
     end
-    return nil
+    return result
 end
 
 return M

@@ -5,7 +5,7 @@ Neovim harpoon plugin, but only the core bits.
 Many thanks to [ThePrimeagen](https://github.com/ThePrimeagen), this
 implementation takes many ideas from the original
 [harpoon](https://github.com/ThePrimeagen/harpoon) plugin, as well as
-various naming conventions for the commonly used publically exposed methods.
+various naming conventions for the commonly used publicly exposed methods.
 
 The idea is I like all the file marking and switch logic that's part of `harpoon`,
 but am not interested in all of the TMUX / terminal stuff.
@@ -14,7 +14,7 @@ Looks like `ThePrimeagen` expresses some similar thoughts based on:
 [issue-255](https://github.com/ThePrimeagen/harpoon/issues/255).
 
 There are pretty large changes in this implementation so mapping the 2 outside
-of what is available publically is not straightforward.
+of what is available publicly is not straightforward.
 
 # Features
 
@@ -35,7 +35,7 @@ of what is available publically is not straightforward.
 
 # Differences from Original
 
-While many of the publically exposed behaviors have been copied to be nearly exact
+While many of the publicly exposed behaviors have been copied to be nearly exact
 there are a couple of intentional differences in behavior:
 
 - Invalid files are never saved to your marks. When editing you can add whatever
@@ -94,7 +94,7 @@ This requires `python` to be installed but does not rely on any additional libra
 This section is a copy paste from the original, with some minor changes / additions.
 
 You can see an example config which assigns all of these commands to keymaps
-[here](https://github.com/MeanderingProgrammer/dotfiles/blob/main/.config/nvim/lua/plugins/harpooncore.lua).
+[here](https://github.com/MeanderingProgrammer/dotfiles/blob/main/.config/nvim/lua/mp/plugins/harpoon.lua).
 
 Here we'll explain how to wield the power of the harpoon.
 
@@ -105,7 +105,7 @@ Here we'll explain how to wield the power of the harpoon.
 You mark files you want to revisit later on.
 
 ```lua
-:lua require('harpoon-core.mark').add_file()
+:lua require('harpoon-core').add_file()
 ```
 
 ### Removing
@@ -113,7 +113,7 @@ You mark files you want to revisit later on.
 These can also be removed.
 
 ```lua
-:lua require('harpoon-core.mark').rm_file()
+:lua require('harpoon-core').rm_file()
 ```
 
 ## File Navigation
@@ -121,7 +121,7 @@ These can also be removed.
 View all project marks.
 
 ```lua
-:lua require('harpoon-core.ui').toggle_quick_menu()
+:lua require('harpoon-core').toggle_quick_menu()
 ```
 
 You can go up and down the list, enter, delete or reorder. `q` and `<esc>` exit
@@ -131,14 +131,14 @@ You can also switch to any mark without bringing up the menu. Below example uses
 3 as the target file.
 
 ```lua
-:lua require('harpoon-core.ui').nav_file(3)
+:lua require('harpoon-core').nav_file(3)
 ```
 
 You can also cycle the list in both directions.
 
 ```lua
-:lua require('harpoon-core.ui').nav_next()
-:lua require('harpoon-core.ui').nav_prev()
+:lua require('harpoon-core').nav_next()
+:lua require('harpoon-core').nav_prev()
 ```
 
 From the quickmenu, open a file in:

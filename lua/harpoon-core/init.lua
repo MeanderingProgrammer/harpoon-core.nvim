@@ -1,4 +1,4 @@
----@class harpoon.core.Init
+---@class harpoon.core.Init: harpoon.core.Api
 local M = {}
 
 ---@class harpoon.core.UserMenuSettings
@@ -39,4 +39,9 @@ function M.setup(opts)
     require('harpoon-core.ui').setup(state.config)
 end
 
-return M
+return setmetatable(M, {
+    __index = function(_, key)
+        -- Allows API methods to be accessed from top level
+        return require('harpoon-core.api')[key]
+    end,
+})
