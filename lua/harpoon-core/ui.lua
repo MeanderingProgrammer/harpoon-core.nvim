@@ -59,7 +59,7 @@ function M.toggle_quick_menu()
 
     local filenames = {}
     for _, mark in ipairs(marker.get_marks()) do
-        table.insert(filenames, mark.filename)
+        filenames[#filenames + 1] = mark.filename
     end
 
     M.buf = vim.api.nvim_create_buf(false, false)
@@ -191,7 +191,7 @@ function M.get_existing(mark)
             local buf = vim.api.nvim_win_get_buf(win)
             local filename = vim.fn.bufname(buf)
             if marker.relative(filename) == mark.filename then
-                table.insert(result, win)
+                result[#result + 1] = win
             end
         end
     end

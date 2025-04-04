@@ -99,7 +99,7 @@ function M.get_results()
     local result = {}
     for i, mark in ipairs(marker.get_marks()) do
         mark.index = i
-        table.insert(result, mark)
+        result[#result + 1] = mark
     end
     return result
 end

@@ -117,7 +117,7 @@ function M.set_project(filenames)
         if filename ~= nil then
             local _, mark = M.get_by_filename(filename)
             mark = mark ~= nil and mark or { filename = filename }
-            table.insert(marks, mark)
+            marks[#marks + 1] = mark
         end
     end
     M.projects[M.project()] = { marks = marks }
@@ -129,10 +129,11 @@ function M.add_file(filename)
     filename = M.relative(filename)
     local index, _ = M.get_by_filename(filename)
     if filename ~= nil and index == nil then
-        table.insert(M.get_marks(), {
+        local marks = M.get_marks()
+        marks[#marks + 1] = {
             filename = filename,
             cursor = vim.api.nvim_win_get_cursor(0),
-        })
+        }
         M.save()
     end
 end
