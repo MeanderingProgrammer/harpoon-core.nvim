@@ -71,6 +71,7 @@ function M.project()
     return M.root() .. (branch == nil and '' or '-' .. branch)
 end
 
+---@param filename? string
 ---@return integer?, harpoon.core.Mark?
 function M.get_by_filename(filename)
     for i, mark in ipairs(M.get_marks()) do
