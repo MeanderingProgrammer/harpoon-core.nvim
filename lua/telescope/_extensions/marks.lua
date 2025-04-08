@@ -28,13 +28,14 @@ function M.confirm_delete()
         return true
     end
     local response = vim.fn.input('Delete current mark? [y/n]: ')
-    return string.len(response) > 0 and string.sub(string.lower(response), 0, 1) == 'y'
+    return #response > 0 and string.sub(string.lower(response), 0, 1) == 'y'
 end
 
 ---@private
 ---@param buf integer
 function M.move_up(buf)
-    local marks, index = marker.get_marks(), action_state.get_selected_entry().index
+    local marks = marker.get_marks()
+    local index = action_state.get_selected_entry().index
     if index ~= #marks then
         local mark = table.remove(marks, index)
         table.insert(marks, index + 1, mark)
@@ -46,7 +47,8 @@ end
 ---@private
 ---@param buf integer
 function M.move_down(buf)
-    local marks, index = marker.get_marks(), action_state.get_selected_entry().index
+    local marks = marker.get_marks()
+    local index = action_state.get_selected_entry().index
     if index ~= 1 then
         local mark = table.remove(marks, index)
         table.insert(marks, index - 1, mark)
