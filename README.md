@@ -158,7 +158,7 @@ require('telescope').load_extension('harpoon-core')
 Then open the marks page.
 
 ```lua
-Telescope harpoon-core marks
+require('telescope').load_extension('harpoon-core').marks.picker()
 ```
 
 Valid keymaps in Telescope are:
@@ -166,3 +166,19 @@ Valid keymaps in Telescope are:
 - `<ctrl-d>` delete the current mark
 - `<ctrl-p>` move mark up one position
 - `<ctrl-n>` move mark down one position
+
+You can override these keymaps in your configs as such:
+
+```lua
+vim.keymap.set("n", "<leader>r-", function()
+    local harpoon_core = require("telescope").extensions["harpoon-core"].marks
+    harpoon_core.picker({
+        attach_mappings = function(_, map)
+            map({ "i", "n" }, "<C-x>", harpoon_core.delete)
+            map({ "i", "n" }, "<C-S-k>", harpoon_core.move_up)
+            map({ "i", "n" }, "<C-S-j>", harpoon_core.move_down)
+            return true
+        end,
+    })
+end, { desc = "Open Harpoon-core Telescope picker with custom mappings" })
+```
