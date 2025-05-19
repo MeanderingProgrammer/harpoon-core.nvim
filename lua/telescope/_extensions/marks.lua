@@ -106,23 +106,30 @@ function M.get_results()
     return result
 end
 
-return function(opts)
+M.picker = function(opts)
     opts = opts or {}
-    pickers
-        .new(opts, {
-            prompt_title = 'Harpoon',
-            finder = M.generate_finder(),
-            sorter = conf.generic_sorter(opts),
-            previewer = conf.grep_previewer(opts),
-            attach_mappings = function(_, map)
-                map('i', '<c-d>', M.delete)
-                map('n', '<c-d>', M.delete)
-                map('i', '<c-p>', M.move_up)
-                map('n', '<c-p>', M.move_up)
-                map('i', '<c-n>', M.move_down)
-                map('n', '<c-n>', M.move_down)
-                return true
-            end,
-        })
-        :find()
+
+    local default_attach = function(_, map)
+        map('i', '<c-d>', M.delete)
+        map('n', '<c-d>', M.delete)
+        map('i', '<c-p>', M.move_up)
+        map('n', '<c-p>', M.move_up)
+        map('i', '<c-n>', M.move_down)
+        map('n', '<c-n>', M.move_down)
+        return true
+    end
+
+    -- If user provides attach_mappings, use only theirs
+    -- Otherwise fall back to the default
+    opts.attach_mappings = opts.attach_mappings or default_attach
+
+    require("telescope.pickers").new(opts, {
+        prompt_title = 'Harpoon',
+        finder = M.generate_finder(),
+        sorter = conf.generic_sorter(opts),
+        previewer = conf.grep_previewer(opts),
+        attach_mappings = opts.attach_mappings,
+    }):find()
 end
+
+return M
