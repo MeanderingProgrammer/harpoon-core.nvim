@@ -1,29 +1,28 @@
-local marker = require('harpoon-core.mark')
+local Marks = require('harpoon-core.mark')
+
+---@class harpoon.core.ui.Config
+---@field use_existing boolean
+---@field default_action? string
+---@field use_cursor boolean
+---@field menu harpoon.core.menu.Config
 
 ---@class harpoon.core.Ui
----@field private use_existing boolean
----@field private default_action? string
----@field private use_cursor boolean
----@field private width integer
----@field private height integer
+---@field private config harpoon.core.ui.Config
 ---@field private buf? integer
 ---@field private win? integer
 local M = {}
 
----@param config harpoon.core.Config
+---@param config harpoon.core.ui.Config
 function M.setup(config)
-    M.use_existing = config.use_existing
-    M.default_action = config.default_action
-    M.use_cursor = config.use_cursor
-    M.width = config.menu.width
-    M.height = config.menu.height
+    M.config = config
     M.buf = nil
     M.win = nil
 end
 
 function M.nav_next()
-    local marks, index = marker.get_marks(), marker.current()
-    if index == nil or index == #marks then
+    local marks = Marks.get()
+    local index = Marks.index()
+    if not index or index == #marks then
         M.nav_file(1)
     else
         M.nav_file(index + 1)
@@ -31,8 +30,9 @@ function M.nav_next()
 end
 
 function M.nav_prev()
-    local marks, index = marker.get_marks(), marker.current()
-    if index == nil or index == 1 then
+    local marks = Marks.get()
+    local index = Marks.index()
+    if not index or index == 1 then
         M.nav_file(#marks)
     else
         M.nav_file(index - 1)
@@ -41,7 +41,7 @@ end
 
 ---@param index integer
 function M.nav_file(index)
-    local marks = marker.get_marks()
+    local marks = Marks.get()
     if #marks > 0 and index <= #marks then
         M.open(marks[index], nil)
     end
@@ -55,10 +55,10 @@ function M.toggle_quick_menu()
 
     -- This must happen before we create the window, otherwise the current buffer
     -- ends up being the harpoon window
-    local index = marker.current()
+    local index = Marks.index()
 
     local filenames = {}
-    for _, mark in ipairs(marker.get_marks()) do
+    for _, mark in ipairs(Marks.get()) do
         filenames[#filenames + 1] = mark.filename
     end
 
@@ -68,10 +68,10 @@ function M.toggle_quick_menu()
         title_pos = 'center',
         border = 'rounded',
         relative = 'editor',
-        height = M.height,
-        width = M.width,
-        row = math.floor((vim.o.lines - M.height) / 2),
-        col = math.floor((vim.o.columns - M.width) / 2),
+        height = M.config.menu.height,
+        width = M.config.menu.width,
+        row = math.floor((vim.o.lines - M.config.menu.height) / 2),
+        col = math.floor((vim.o.columns - M.config.menu.width) / 2),
     })
     if M.buf == nil or M.win == nil then
         return
@@ -86,15 +86,19 @@ function M.toggle_quick_menu()
         vim.cmd('+' .. index - 1)
     end
 
-    vim.api.nvim_set_option_value('bufhidden', 'delete', { buf = M.buf })
-    vim.api.nvim_set_option_value('buftype', 'acwrite', { buf = M.buf })
+    ---@type vim.api.keyset.option
+    local buf_opts = { buf = M.buf }
+    vim.api.nvim_set_option_value('bufhidden', 'delete', buf_opts)
+    vim.api.nvim_set_option_value('buftype', 'acwrite', buf_opts)
 
-    M.buf_map('q', 'save', nil)
-    M.buf_map('<esc>', 'save', nil)
-    M.buf_map('<cr>', 'open', nil)
-    M.buf_map('<C-v>', 'open', 'vs')
-    M.buf_map('<C-x>', 'open', 'sp')
-    M.buf_map('<C-t>', 'open', 'tabnew')
+    ---@type vim.keymap.set.Opts
+    local opts = { buffer = M.buf, noremap = true, silent = true }
+    vim.keymap.set('n', 'q', M.keymap('save'), opts)
+    vim.keymap.set('n', '<esc>', M.keymap('save'), opts)
+    vim.keymap.set('n', '<cr>', M.keymap('open'), opts)
+    vim.keymap.set('n', '<C-v>', M.keymap('open', 'vs'), opts)
+    vim.keymap.set('n', '<C-x>', M.keymap('open', 'sp'), opts)
+    vim.keymap.set('n', '<C-t>', M.keymap('open', 'tabnew'), opts)
 
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         buffer = M.buf,
@@ -114,19 +118,19 @@ function M.toggle_quick_menu()
 end
 
 ---@private
----@param lhs string
----@param variant 'save'|'open'
+---@param kind 'save'|'open'
 ---@param command? string
-function M.buf_map(lhs, variant, command)
-    vim.keymap.set('n', lhs, function()
-        if variant == 'save' then
+---@return fun()
+function M.keymap(kind, command)
+    return function()
+        if kind == 'save' then
             M.save_close()
-        elseif variant == 'open' then
+        elseif kind == 'open' then
             local filename = vim.api.nvim_get_current_line()
-            local _, mark = marker.get_by_filename(filename)
+            local mark = Marks.with_filename(filename, 'mark')
             M.open(mark, command)
         end
-    end, { buffer = M.buf, noremap = true, silent = true })
+    end
 end
 
 ---@private
@@ -138,26 +142,26 @@ function M.open(mark, command)
     end
     M.save_close()
 
-    local windows = M.get_existing(mark)
+    local wins = M.get_existing(mark)
 
     -- Don't do anything if the mark is the current window
-    if vim.tbl_contains(windows, vim.api.nvim_get_current_win()) then
+    if vim.tbl_contains(wins, vim.api.nvim_get_current_win()) then
         return
     end
 
     -- Set first window found as current if use_existing is set
-    if M.use_existing and #windows > 0 then
-        vim.api.nvim_set_current_win(windows[1])
+    if M.config.use_existing and #wins > 0 then
+        vim.api.nvim_set_current_win(wins[1])
         return
     end
 
-    command = command or M.default_action
+    command = command or M.config.default_action
     if command ~= nil then
         vim.cmd(command)
     end
 
     vim.cmd.edit(mark.filename)
-    if M.use_cursor and mark.cursor ~= nil then
+    if M.config.use_cursor and mark.cursor ~= nil then
         vim.api.nvim_win_set_cursor(0, mark.cursor)
     end
 end
@@ -175,8 +179,7 @@ end
 ---@private
 function M.save_project()
     if M.buf ~= nil then
-        local filenames = vim.api.nvim_buf_get_lines(M.buf, 0, -1, true)
-        marker.set_project(filenames)
+        Marks.set(vim.api.nvim_buf_get_lines(M.buf, 0, -1, true))
     end
 end
 
@@ -189,8 +192,8 @@ function M.get_existing(mark)
     for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
             local buf = vim.api.nvim_win_get_buf(win)
-            local filename = vim.fn.bufname(buf)
-            if marker.relative(filename) == mark.filename then
+            local file = vim.fn.bufname(buf)
+            if Marks.filename(file) == mark.filename then
                 result[#result + 1] = win
             end
         end

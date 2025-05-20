@@ -67,19 +67,25 @@ by the user.
 
 ```lua
 require('harpoon-core').setup({
+    -- Set marks specific to each git branch inside git repository
+    mark_branch = false,
     -- Make existing window active rather than creating a new window
     use_existing = true,
     -- Default action when opening a mark, defaults to current window
     -- Example: 'vs' will open in new vertical split, 'tabnew' will open in new tab
     default_action = nil,
-    -- Set marks specific to each git branch inside git repository
-    mark_branch = false,
     -- Use the previous cursor position of marked files when opened
     use_cursor = true,
     -- Settings for popup window
     menu = { width = 60, height = 10 },
     -- Controls confirmation when deleting mark in telescope
     delete_confirmation = true,
+    -- Controls keymaps for various telescope actions
+    picker = {
+        delete = '<c-d>',
+        move_down = '<c-n>',
+        move_up = '<c-p>',
+    },
 })
 ```
 
@@ -141,11 +147,11 @@ You can also cycle the list in both directions.
 :lua require('harpoon-core').nav_prev()
 ```
 
-From the quickmenu, open a file in:
+From the quickmenu, open a file with:
 
-- Vertical split with `<ctrl-v>`
-- Horizontal split with `<ctrl-x>`
-- New tab with `<ctrl-t>`
+- `<c-v>` vertical split
+- `<c-x>` horizontal split
+- `<c-t>` new tab
 
 # Telescope Support
 
@@ -157,28 +163,24 @@ require('telescope').load_extension('harpoon-core')
 
 Then open the marks page.
 
-```lua
-require('telescope').load_extension('harpoon-core').marks.picker()
+```vim
+:Telescope harpoon-core marks
 ```
 
 Valid keymaps in Telescope are:
 
-- `<ctrl-d>` delete the current mark
-- `<ctrl-p>` move mark up one position
-- `<ctrl-n>` move mark down one position
+- `<c-d>` delete the current mark
+- `<c-p>` move mark up one position
+- `<c-n>` move mark down one position
 
-You can override these keymaps in your configs as such:
+You can override these keymaps in your config:
 
 ```lua
-vim.keymap.set("n", "<leader>r-", function()
-    local harpoon_core = require("telescope").extensions["harpoon-core"].marks
-    harpoon_core.picker({
-        attach_mappings = function(_, map)
-            map({ "i", "n" }, "<C-x>", harpoon_core.delete)
-            map({ "i", "n" }, "<C-S-k>", harpoon_core.move_up)
-            map({ "i", "n" }, "<C-S-j>", harpoon_core.move_down)
-            return true
-        end,
-    })
-end, { desc = "Open Harpoon-core Telescope picker with custom mappings" })
+require('harpoon-core').setup({
+    picker = {
+        delete = '<C-x>',
+        move_down = '<C-S-j>',
+        move_up = '<C-S-k>',
+    },
+})
 ```
