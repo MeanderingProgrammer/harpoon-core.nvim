@@ -1,23 +1,24 @@
 ---@class harpoon.core.Init: harpoon.core.Api
 local M = {}
 
----@class harpoon.core.UserConfig
----@field mark_branch? boolean
----@field use_existing? boolean
+---@class harpoon.core.Config
+---@field mark_branch boolean
+---@field use_existing boolean
 ---@field default_action? string
----@field use_cursor? boolean
----@field menu? harpoon.core.menu.UserConfig
----@field delete_confirmation? boolean
----@field picker? harpoon.core.picker.UserConfig
+---@field use_cursor boolean
+---@field menu harpoon.core.menu.Config
+---@field delete_confirmation boolean
+---@field picker harpoon.core.picker.Config
 
----@class harpoon.core.menu.UserConfig
----@field width? integer
----@field height? integer
+---@class harpoon.core.menu.Config
+---@field icons boolean
+---@field width integer
+---@field height integer
 
----@class harpoon.core.picker.UserConfig
----@field delete? string
----@field move_down? string
----@field move_up? string
+---@class harpoon.core.picker.Config
+---@field delete string
+---@field move_down string
+---@field move_up string
 
 ---@private
 ---@type harpoon.core.Config
@@ -32,7 +33,7 @@ M.default = {
     -- Set marks specific to each git branch inside git repository
     use_cursor = true,
     -- Settings for popup window
-    menu = { width = 60, height = 10 },
+    menu = { icons = true, width = 0.5, height = 0.5 },
     -- Controls confirmation when deleting mark in telescope
     delete_confirmation = true,
     -- Controls keymaps for various telescope actions

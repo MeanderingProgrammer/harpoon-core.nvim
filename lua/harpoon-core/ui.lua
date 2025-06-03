@@ -1,3 +1,4 @@
+local Icons = require('harpoon-core.icons')
 local Marks = require('harpoon-core.mark')
 
 ---@class harpoon.core.ui.Config
@@ -8,15 +9,47 @@ local Marks = require('harpoon-core.mark')
 
 ---@class harpoon.core.Ui
 ---@field private config harpoon.core.ui.Config
----@field private buf? integer
----@field private win? integer
 local M = {}
+
+---@private
+M.ns = vim.api.nvim_create_namespace('HarpoonCore')
+
+---@private
+---@type integer?
+M.buf = nil
+
+---@private
+---@type integer?
+M.win = nil
 
 ---@param config harpoon.core.ui.Config
 function M.setup(config)
     M.config = config
-    M.buf = nil
-    M.win = nil
+    vim.api.nvim_set_decoration_provider(M.ns, {
+        on_win = function(_, win, buf)
+            if not M.buf or not M.win or M.buf ~= buf or M.win ~= win then
+                return false
+            end
+            if not M.config.menu.icons then
+                return false
+            end
+            vim.api.nvim_buf_clear_namespace(buf, M.ns, 0, -1)
+            local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+            for row, line in ipairs(lines) do
+                if #line > 0 then
+                    local icon, highlight = Icons.get(line)
+                    if icon and highlight then
+                        -- ephemeral marks do not support inline
+                        vim.api.nvim_buf_set_extmark(buf, M.ns, row - 1, 0, {
+                            virt_text = { { icon .. ' ', highlight } },
+                            virt_text_pos = 'inline',
+                        })
+                    end
+                end
+            end
+            return false
+        end,
+    })
 end
 
 function M.nav_next()
@@ -48,41 +81,51 @@ function M.nav_file(index)
 end
 
 function M.toggle_quick_menu()
-    if M.buf ~= nil or M.win ~= nil then
+    if M.buf or M.win then
         M.save_close()
         return
     end
 
-    -- This must happen before we create the window, otherwise the current buffer
-    -- ends up being the harpoon window
+    -- must happen before we create the window to get correct current buffer
     local index = Marks.index()
-
-    local filenames = {}
-    for _, mark in ipairs(Marks.get()) do
-        filenames[#filenames + 1] = mark.filename
-    end
+    local marks = Marks.get()
 
     M.buf = vim.api.nvim_create_buf(false, false)
+
+    local rows = vim.o.lines
+    local height = M.config.menu.height
+    height = height > 1 and height or math.floor(rows * height + 0.5)
+
+    local cols = vim.o.columns
+    local width = M.config.menu.width
+    width = width > 1 and width or math.floor(cols * width + 0.5)
+
     M.win = vim.api.nvim_open_win(M.buf, true, {
         title = ' Harpoon ',
         title_pos = 'center',
         border = 'rounded',
         relative = 'editor',
-        height = M.config.menu.height,
-        width = M.config.menu.width,
-        row = math.floor((vim.o.lines - M.config.menu.height) / 2),
-        col = math.floor((vim.o.columns - M.config.menu.width) / 2),
+        height = height,
+        width = width,
+        row = math.floor((rows - height) / 2),
+        col = math.floor((cols - width) / 2),
     })
-    if M.buf == nil or M.win == nil then
+
+    if not M.buf or not M.win then
         return
     end
 
     vim.api.nvim_buf_set_name(M.buf, 'harpoon-menu')
-    vim.api.nvim_buf_set_lines(M.buf, 0, #filenames, false, filenames)
 
-    -- Move cursor to current file if it exists, cursor is already on first
+    local lines = {} ---@type string[]
+    for _, mark in ipairs(marks) do
+        lines[#lines + 1] = mark.filename
+    end
+    vim.api.nvim_buf_set_lines(M.buf, 0, #lines, false, lines)
+
+    -- move cursor to current file if it exists, cursor is already on first
     -- line so movement needs to be offset by 1
-    if index ~= nil then
+    if index then
         vim.cmd('+' .. index - 1)
     end
 
@@ -91,19 +134,23 @@ function M.toggle_quick_menu()
     vim.api.nvim_set_option_value('bufhidden', 'delete', buf_opts)
     vim.api.nvim_set_option_value('buftype', 'acwrite', buf_opts)
 
+    ---@type vim.api.keyset.option
+    local win_opts = { scope = 'local', win = M.win }
+    vim.api.nvim_set_option_value('spell', false, win_opts)
+
     ---@type vim.keymap.set.Opts
-    local opts = { buffer = M.buf, noremap = true, silent = true }
-    vim.keymap.set('n', 'q', M.keymap('save'), opts)
-    vim.keymap.set('n', '<esc>', M.keymap('save'), opts)
-    vim.keymap.set('n', '<cr>', M.keymap('open'), opts)
-    vim.keymap.set('n', '<C-v>', M.keymap('open', 'vs'), opts)
-    vim.keymap.set('n', '<C-x>', M.keymap('open', 'sp'), opts)
-    vim.keymap.set('n', '<C-t>', M.keymap('open', 'tabnew'), opts)
+    local key_opts = { buffer = M.buf, noremap = true, silent = true }
+    vim.keymap.set('n', 'q', M.keymap('save'), key_opts)
+    vim.keymap.set('n', '<esc>', M.keymap('save'), key_opts)
+    vim.keymap.set('n', '<cr>', M.keymap('open'), key_opts)
+    vim.keymap.set('n', '<C-v>', M.keymap('open', 'vs'), key_opts)
+    vim.keymap.set('n', '<C-x>', M.keymap('open', 'sp'), key_opts)
+    vim.keymap.set('n', '<C-t>', M.keymap('open', 'tabnew'), key_opts)
 
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         buffer = M.buf,
         callback = function()
-            vim.api.nvim_set_option_value('modified', false, { buf = M.buf })
+            vim.api.nvim_set_option_value('modified', false, buf_opts)
         end,
     })
     vim.api.nvim_create_autocmd('BufWriteCmd', {
@@ -168,7 +215,7 @@ end
 
 ---@private
 function M.save_close()
-    if M.win ~= nil then
+    if M.win then
         M.save_project()
         vim.api.nvim_win_close(M.win, true)
         M.buf = nil
@@ -178,8 +225,8 @@ end
 
 ---@private
 function M.save_project()
-    if M.buf ~= nil then
-        Marks.set(vim.api.nvim_buf_get_lines(M.buf, 0, -1, true))
+    if M.buf then
+        Marks.set(vim.api.nvim_buf_get_lines(M.buf, 0, -1, false))
     end
 end
 
