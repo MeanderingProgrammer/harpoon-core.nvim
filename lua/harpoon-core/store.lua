@@ -13,6 +13,7 @@ end
 
 ---@return harpoon.core.Projects
 function Store:read()
+    ---@type boolean, harpoon.core.Projects?
     local ok, result = pcall(function()
         local file = assert(io.open(self.path, 'r'))
         local text = file:read('*all')

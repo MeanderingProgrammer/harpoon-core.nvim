@@ -235,7 +235,7 @@ end
 ---@return integer[]
 function M.get_existing(mark)
     -- bufwinid is limited in scope to current tab, otherwise it would be perfect
-    local result = {}
+    local result = {} ---@type integer[]
     for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
             local buf = vim.api.nvim_win_get_buf(win)
