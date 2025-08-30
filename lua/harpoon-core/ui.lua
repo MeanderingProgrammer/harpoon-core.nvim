@@ -34,20 +34,19 @@ function M.setup(config)
                 return false
             end
             vim.api.nvim_buf_clear_namespace(buf, M.ns, 0, -1)
-            local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-            for row, line in ipairs(lines) do
-                if #line > 0 then
-                    local icon, highlight = Icons.get(line)
-                    if icon and highlight then
-                        -- ephemeral marks do not support inline
-                        vim.api.nvim_buf_set_extmark(buf, M.ns, row - 1, 0, {
-                            virt_text = { { icon .. ' ', highlight } },
-                            virt_text_pos = 'inline',
-                        })
-                    end
+        end,
+        on_line = function(_, _, buf, row)
+            local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1]
+            if line and #line > 0 then
+                local icon, highlight = Icons.get(line)
+                if icon and highlight then
+                    -- ephemeral marks do not support inline
+                    vim.api.nvim_buf_set_extmark(buf, M.ns, row, 0, {
+                        virt_text = { { icon .. ' ', highlight } },
+                        virt_text_pos = 'inline',
+                    })
                 end
             end
-            return false
         end,
     })
 end
