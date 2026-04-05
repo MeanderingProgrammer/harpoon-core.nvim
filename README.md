@@ -49,6 +49,15 @@ there are a couple of intentional differences in behavior:
 
 # Install
 
+## vim.pack
+
+```lua
+vim.pack.add({
+    'https://github.com/MeanderingProgrammer/harpoon-core.nvim',
+})
+require('harpoon-core').setup({})
+```
+
 ## lazy.nvim
 
 ```lua
