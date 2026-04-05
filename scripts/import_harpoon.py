@@ -1,53 +1,53 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any
+
+Config = dict[str, Any]
 
 
 @dataclass(frozen=True)
 class Project:
     root: Path
-    branch: Optional[str]
+    branch: str | None
 
     @property
     def name(self) -> str:
-        result = [str(self.root)]
-        if self.branch is not None:
-            result.append(self.branch)
-        return "-".join(result)
+        if self.branch is None:
+            return str(self.root)
+        else:
+            return f"{self.root}-{self.branch}"
 
 
 def main() -> None:
-    nvim_dir = Path.home().joinpath(".local/share/nvim")
-    if not nvim_dir.is_dir():
-        raise Exception(f"Could not find nvim directory: {nvim_dir}")
+    nvim = Path.home() / ".local/share/nvim"
+    assert nvim.is_dir(), f"No nvim directory: {nvim}"
 
-    harpoon = nvim_dir.joinpath("harpoon.json")
-    if not harpoon.is_file():
-        raise Exception(f"Could not find harpoon marks to import: {harpoon}")
+    harpoon = nvim / "harpoon.json"
+    assert harpoon.is_file(), f"No harpoon marks file to import from: {harpoon}"
 
     core = translate(json.loads(harpoon.read_text()))
-    nvim_dir.joinpath("harpoon-core.json").write_text(json.dumps(core))
+    (nvim / "harpoon-core.json").write_text(json.dumps(core))
     print("Successfully migrated harpoon marks")
 
 
-def translate(original: dict) -> dict:
-    core = dict()
-    for project, marks in original["projects"].items():
+def translate(harpoon: Config) -> Config:
+    result: Config = dict()
+    for project, config in harpoon["projects"].items():
         project = resolve_project(project)
         if project is None:
             continue
-        core_marks = []
-        for mark in marks["mark"]["marks"]:
-            core_mark = resolve_mark(project, mark)
-            if core_mark is not None:
-                core_marks.append(core_mark)
-        if len(core_marks) > 0:
-            core[project.name] = dict(marks=core_marks)
-    return core
+        marks: list[Config] = []
+        for mark in config["mark"]["marks"]:
+            mark = resolve_mark(project, mark)
+            if mark is not None:
+                marks.append(mark)
+        if len(marks) > 0:
+            result[project.name] = dict(marks=marks)
+    return result
 
 
-def resolve_project(project: str) -> Optional[Project]:
+def resolve_project(project: str) -> Project | None:
     parts = project.rsplit(sep="-", maxsplit=1)
     if len(parts) == 2:
         root = Path(parts[0])
@@ -57,14 +57,15 @@ def resolve_project(project: str) -> Optional[Project]:
     return Project(root=root, branch=None) if root.is_dir() else None
 
 
-def resolve_mark(project: Project, mark: dict) -> Optional[dict]:
-    core_mark = None
+def resolve_mark(project: Project, mark: Config) -> Config | None:
     filename = mark["filename"]
-    if project.root.joinpath(filename).is_file():
-        core_mark = dict(filename=filename)
-        if "row" in mark and "col" in mark:
-            core_mark["cursor"] = [int(mark["row"]), int(mark["col"])]
-    return core_mark
+    if not (project.root / filename).is_file():
+        return None
+    result = dict(filename=filename)
+    row, col = mark.get("row"), mark.get("col")
+    if row is not None and col is not None:
+        result["cursor"] = [int(row), int(col)]
+    return result
 
 
 if __name__ == "__main__":
