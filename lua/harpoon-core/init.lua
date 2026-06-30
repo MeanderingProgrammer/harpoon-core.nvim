@@ -14,6 +14,7 @@ local M = {}
 ---@field icons boolean
 ---@field width integer
 ---@field height integer
+---@field border string|string[]|table[]|'"none"'|'"single"'|'"double"'|'"rounded"'|'"solid"'|'"shadow"'
 
 ---@class harpoon.core.picker.Config
 ---@field delete string
@@ -33,7 +34,12 @@ M.default = {
     -- Set marks specific to each git branch inside git repository
     use_cursor = true,
     -- Settings for popup window
-    menu = { icons = true, width = 0.5, height = 0.5 },
+    menu = {
+        icons = true,
+        width = 0.5,
+        height = 0.5,
+        border = 'rounded',
+    },
     -- Controls confirmation when deleting mark in telescope
     delete_confirmation = true,
     -- Controls keymaps for various telescope actions

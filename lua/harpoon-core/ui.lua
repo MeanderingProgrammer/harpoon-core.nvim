@@ -93,6 +93,7 @@ function M.toggle_quick_menu()
 
     local rows = vim.o.lines
     local height = M.config.menu.height
+    local border = M.config.menu.border
     height = height > 1 and height or math.floor(rows * height + 0.5)
 
     local cols = vim.o.columns
@@ -102,7 +103,7 @@ function M.toggle_quick_menu()
     M.win = vim.api.nvim_open_win(M.buf, true, {
         title = ' Harpoon ',
         title_pos = 'center',
-        border = 'rounded',
+        border = border,
         relative = 'editor',
         height = height,
         width = width,
