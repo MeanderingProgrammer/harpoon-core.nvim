@@ -86,7 +86,12 @@ require('harpoon-core').setup({
     -- Use the previous cursor position of marked files when opened
     use_cursor = true,
     -- Settings for popup window
-    menu = { icons = true, width = 0.5, height = 0.5 },
+    menu = {
+        icons = true,
+        width = 0.5,
+        height = 0.5,
+        border = "rounded",
+    },
     -- Controls confirmation when deleting mark in telescope
     delete_confirmation = true,
     -- Controls keymaps for various telescope actions
