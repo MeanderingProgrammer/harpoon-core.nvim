@@ -84,8 +84,14 @@ end
 ---@return string?
 function M.filename(file)
     file = file or vim.api.nvim_buf_get_name(0)
+    -- instead of using oil.nvim's special paths, use the normal filesystem path
+    if file:sub(1, 6) == 'oil://' then
+        file = file:sub(7)
+    end
     if vim.fn.filereadable(file) == 0 then
-        return nil
+        if vim.fn.isdirectory(file) == 0 then
+            return nil
+        end
     end
     local root = M.root()
     -- ignore path separator after root if file is in root
